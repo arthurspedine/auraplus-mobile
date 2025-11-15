@@ -1,3 +1,4 @@
+import { useAuth } from "@/context/auth-context"
 import { router } from "expo-router"
 import { useState } from "react"
 import {
@@ -10,6 +11,7 @@ import {
 } from "react-native"
 
 export default function LoginPage() {
+  const { login } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
@@ -21,7 +23,7 @@ export default function LoginPage() {
     return emailRegex.test(email)
   }
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const newErrors: { email?: string; password?: string } = {}
 
     if (!email.trim()) {
@@ -40,14 +42,13 @@ export default function LoginPage() {
     }
 
     setErrors({})
-    // TODO: Implementar chamada à API
-    const loginData = {
-      email,
-      password,
-    }
 
-    console.log("Login data:", loginData)
-    router.push("/home")
+    const success = await login(email, password)
+    if (success) {
+      setEmail("")
+      setPassword("")
+      router.push("/home")
+    }
   }
 
   return (
@@ -56,7 +57,7 @@ export default function LoginPage() {
         <View className="mb-12 flex-row items-center justify-between">
           <Text className="font-extrabold text-3xl text-text">Login</Text>
           <Image
-            source={require("../../assets/icon.png")}
+            source={require("@/assets/icon.png")}
             className="h-12 w-12"
             resizeMode="contain"
           />

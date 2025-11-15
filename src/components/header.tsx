@@ -29,8 +29,7 @@ export function Header() {
         style: "destructive",
         onPress: async () => {
           setSheetVisible(false)
-          // Lógica de logout aqui
-          router.replace("/auth/login")
+          router.replace("/logout")
         },
       },
     ])

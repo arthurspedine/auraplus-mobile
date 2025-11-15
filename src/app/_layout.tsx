@@ -1,6 +1,7 @@
 import { Stack } from "expo-router"
 import { useColorScheme } from "react-native"
 import "@/global.css"
+import { AuthProvider } from "@/context/auth-context"
 
 function InitialLayout() {
   useColorScheme()
@@ -14,5 +15,9 @@ function InitialLayout() {
 }
 
 export default function RootLayout() {
-  return <InitialLayout />
+  return (
+    <AuthProvider>
+      <InitialLayout />
+    </AuthProvider>
+  )
 }

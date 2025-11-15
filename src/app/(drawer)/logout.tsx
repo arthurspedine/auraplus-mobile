@@ -1,18 +1,17 @@
+import { useAuth } from "@/context/auth-context"
+import { router } from "expo-router"
 import { useEffect } from "react"
 import { View } from "react-native"
 
-async function logout() {
-  // Simulate an async logout operation
-  return new Promise(resolve => setTimeout(resolve, 1000))
-}
-
 export default function LogoutPage() {
+  const { logout } = useAuth()
   useEffect(() => {
     const doLogout = async () => {
       await logout()
     }
     doLogout()
-  }, [])
+    router.replace("/auth/login")
+  }, [logout])
 
   return <View />
 }

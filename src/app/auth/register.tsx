@@ -1,3 +1,4 @@
+import { request } from "@/helper/request"
 import { router } from "expo-router"
 import { useState } from "react"
 import {
@@ -26,7 +27,7 @@ export default function RegisterPage() {
     return emailRegex.test(email)
   }
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     const newErrors: {
       name?: string
       email?: string
@@ -62,14 +63,18 @@ export default function RegisterPage() {
     }
 
     setErrors({})
-    // TODO: Implementar chamada à API
     const registerData = {
-      name,
+      nome: name,
       email,
-      password,
+      senha: password,
     }
 
-    console.log("Register data:", registerData)
+    await request("/usuario", "post", registerData)
+    setEmail("")
+    setName("")
+    setPassword("")
+    setConfirmPassword("")
+    router.back() // Voltar para a tela de login após registro bem-sucedido
   }
 
   return (
@@ -78,7 +83,7 @@ export default function RegisterPage() {
         <View className="mb-12 flex-row items-center justify-between">
           <Text className="font-extrabold text-3xl text-text">Criar Conta</Text>
           <Image
-            source={require("../../assets/icon.png")}
+            source={require("@/assets/icon.png")}
             className="h-12 w-12"
             resizeMode="contain"
           />
