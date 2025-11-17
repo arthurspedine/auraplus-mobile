@@ -2,6 +2,7 @@ import { request } from "@/helper/request"
 import { router } from "expo-router"
 import { useState } from "react"
 import {
+  Alert,
   Image,
   ScrollView,
   Text,
@@ -21,6 +22,7 @@ export default function RegisterPage() {
     password?: string
     confirmPassword?: string
   }>({})
+  const [isLoading, setIsLoading] = useState(false)
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -69,12 +71,31 @@ export default function RegisterPage() {
       senha: password,
     }
 
-    await request("/usuario", "post", registerData)
-    setEmail("")
-    setName("")
-    setPassword("")
-    setConfirmPassword("")
-    router.back() // Voltar para a tela de login após registro bem-sucedido
+    setIsLoading(true)
+    try {
+      console.log("Registrando")
+
+      await request("/usuario", "post", registerData)
+      Alert.alert(
+        "Sucesso",
+        "Registro bem-sucedido! Você já pode fazer login com sua nova conta."
+      )
+      setEmail("")
+      setName("")
+      setPassword("")
+      setConfirmPassword("")
+      router.back() // Voltar para a tela de login após registro bem-sucedido
+    } catch (error) {
+      Alert.alert(
+        "Erro",
+        error instanceof Error
+          ? error.message
+          : "Ocorreu um erro ao registrar. Tente novamente."
+      )
+      return
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -172,13 +193,18 @@ export default function RegisterPage() {
         <TouchableOpacity
           className="mb-4 rounded-lg bg-primary py-4"
           onPress={handleRegister}
+          disabled={isLoading}
         >
           <Text className="text-center font-semibold text-base text-white">
             Registrar
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity className="py-2" onPress={() => router.back()}>
+        <TouchableOpacity
+          className="py-2"
+          onPress={() => router.back()}
+          disabled={isLoading}
+        >
           <Text className="text-center text-muted">
             Já tem uma conta?{" "}
             <Text className="font-semibold text-primary">Fazer login</Text>

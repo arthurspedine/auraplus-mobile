@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
     {}
   )
+  const [isLoading, setIsLoading] = useState(false)
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -43,12 +44,14 @@ export default function LoginPage() {
 
     setErrors({})
 
+    setIsLoading(true)
     const success = await login(email, password)
     if (success) {
       setEmail("")
       setPassword("")
       router.push("/home")
     }
+    setIsLoading(false)
   }
 
   return (
@@ -104,6 +107,7 @@ export default function LoginPage() {
         <TouchableOpacity
           className="mb-4 rounded-lg bg-primary py-4"
           onPress={handleLogin}
+          disabled={isLoading}
         >
           <Text className="text-center font-semibold text-base text-white">
             Entrar
@@ -113,6 +117,7 @@ export default function LoginPage() {
         <TouchableOpacity
           className="py-2"
           onPress={() => router.push("/auth/register")}
+          disabled={isLoading}
         >
           <Text className="text-center text-muted">
             Não tem uma conta?{" "}
