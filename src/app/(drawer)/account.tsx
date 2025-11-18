@@ -78,6 +78,7 @@ export default function PerfilScreen() {
     try {
       const updatedUsuario = {
         nome: usuario.nome,
+        email: usuario.email,
         senha: newPassword,
       };
       await request("/usuario/me", "put", updatedUsuario, {
