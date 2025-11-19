@@ -5,11 +5,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Keyboard,
   Modal,
+  RefreshControl,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -40,6 +43,7 @@ export default function HomePage() {
   const { token } = useAuth();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedSentimento, setSelectedSentimento] = useState<SentimentoOption | null>(null);
   const [descricao, setDescricao] = useState("");
@@ -50,31 +54,43 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!token) return;
-
-    const fetchData = async () => {
-      try {
-        // Primeiro busca dados do usuário
-        const usuarioResponse = await request("/usuario/me", "get", null, {
-          authToken: token,
-        });
-        setUsuario(usuarioResponse as Usuario);
-
-        // Só busca sentimento se o usuário faz parte de uma equipe
-        if ((usuarioResponse as Usuario).equipeId !== null) {
-          const sentimentoResponse = await request("/sentimento", "get", null, {
-            authToken: token,
-          });
-          setSentimentoRegistrado(sentimentoResponse as SentimentoRegistrado);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar dados:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, [token]);
+
+  const fetchData = async (isRefresh = false) => {
+    if (!token) return;
+
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+
+    try {
+      // Primeiro busca dados do usuário
+      const usuarioResponse = await request("/usuario/me", "get", null, {
+        authToken: token,
+      });
+      setUsuario(usuarioResponse as Usuario);
+
+      // Só busca sentimento se o usuário faz parte de uma equipe
+      if ((usuarioResponse as Usuario).equipeId !== null) {
+        const sentimentoResponse = await request("/sentimento", "get", null, {
+          authToken: token,
+        });
+        setSentimentoRegistrado(sentimentoResponse as SentimentoRegistrado);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    fetchData(true);
+  };
 
   const handleSentimentoPress = (sentimento: SentimentoOption) => {
     setSelectedSentimento(sentimento);
@@ -143,7 +159,18 @@ export default function HomePage() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#1F89DA"
+            colors={["#1F89DA"]}
+          />
+        }
+      >
         <View className="px-6 pt-6">
           {/* Header com saudação */}
           <View className="mb-8">
@@ -217,21 +244,6 @@ export default function HomePage() {
             )}
           </View>
 
-          {/* Card de Informações */}
-          <View className="mb-6 overflow-hidden rounded-3xl bg-gradient-to-br">
-            <View className="bg-primary/10 p-6">
-              <View className="mb-3 flex-row items-center gap-2">
-                <Ionicons name="information-circle" size={24} color="#1F89DA" />
-                <Text className="font-bold text-lg text-text">Sobre o Aura+</Text>
-              </View>
-              <Text className="leading-6 text-sm text-muted">
-                O Aura+ foi criado para fortalecer a cultura da nossa empresa, mantendo os
-                colaboradores conectados e engajados. Aqui você pode compartilhar como se sente,
-                enviar reconhecimentos e acompanhar o clima da equipe.
-              </Text>
-            </View>
-          </View>
-
           {/* Cards de Recursos Futuros */}
           <View className="mb-6 gap-3">
             <View className="flex-row items-center gap-2 rounded-2xl border border-primary/30 bg-card p-4">
@@ -260,66 +272,72 @@ export default function HomePage() {
         visible={modalVisible}
         onRequestClose={handleCancelar}
       >
-        <View className="flex-1 items-center justify-center bg-black/80 px-6">
-          <View className="w-full max-w-96 rounded-3xl bg-card p-6">
-            {/* Header do Modal */}
-            <View className="mb-6 items-center">
-              <View
-                className="mb-4 h-20 w-20 items-center justify-center rounded-full"
-                style={{
-                  backgroundColor: selectedSentimento?.color + "20",
-                }}
-              >
-                <Text className="text-5xl">{selectedSentimento?.emoji}</Text>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View className="flex-1 items-center justify-center bg-black/80 px-6">
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View className="w-full max-w-96 rounded-3xl bg-card p-6">
+                {/* Header do Modal */}
+                <View className="mb-6 items-center">
+                  <View
+                    className="mb-4 h-20 w-20 items-center justify-center rounded-full overflow-hidden"
+                    style={{
+                      backgroundColor: selectedSentimento?.color + "20",
+                    }}
+                  >
+                    <Text className="text-5xl leading-none" style={{ marginTop: 4 }}>
+                      {selectedSentimento?.emoji}
+                    </Text>
+                  </View>
+                  <Text className="font-bold text-2xl text-text">{selectedSentimento?.label}</Text>
+                  <Text className="mt-2 text-center text-sm text-muted">
+                    Compartilhe mais sobre como você está se sentindo
+                  </Text>
+                </View>
+
+                {/* Campo de Descrição */}
+                <View className="mb-6">
+                  <Text className="mb-2 font-medium text-sm text-text">Descrição (Opcional)</Text>
+                  <View className="rounded-xl border border-muted/30 bg-secondary p-4">
+                    <TextInput
+                      className="min-h-24 text-base text-text"
+                      placeholder="Conte-nos mais sobre seu dia..."
+                      value={descricao}
+                      onChangeText={setDescricao}
+                      multiline
+                      numberOfLines={4}
+                      textAlignVertical="top"
+                      placeholderTextColor="#999"
+                    />
+                  </View>
+                </View>
+
+                {/* Botões de Ação */}
+                <View className="flex-row gap-3">
+                  <TouchableOpacity
+                    className="h-12 flex-1 items-center justify-center rounded-xl border border-muted/30 bg-background"
+                    onPress={handleCancelar}
+                    disabled={enviando}
+                  >
+                    <Text className="font-medium text-base text-muted">Cancelar</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    className="h-12 flex-1 items-center justify-center rounded-xl"
+                    style={{ backgroundColor: selectedSentimento?.color }}
+                    onPress={handleEnviarSentimento}
+                    disabled={enviando}
+                  >
+                    {enviando ? (
+                      <ActivityIndicator color="#fff" />
+                    ) : (
+                      <Text className="font-semibold text-base text-white">Enviar</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
               </View>
-              <Text className="font-bold text-2xl text-text">{selectedSentimento?.label}</Text>
-              <Text className="mt-2 text-center text-sm text-muted">
-                Compartilhe mais sobre como você está se sentindo
-              </Text>
-            </View>
-
-            {/* Campo de Descrição */}
-            <View className="mb-6">
-              <Text className="mb-2 font-medium text-sm text-text">Descrição (Opcional)</Text>
-              <View className="rounded-xl border border-muted/30 bg-secondary p-4">
-                <TextInput
-                  className="min-h-24 text-base text-text"
-                  placeholder="Conte-nos mais sobre seu dia..."
-                  value={descricao}
-                  onChangeText={setDescricao}
-                  multiline
-                  numberOfLines={4}
-                  textAlignVertical="top"
-                  placeholderTextColor="#999"
-                />
-              </View>
-            </View>
-
-            {/* Botões de Ação */}
-            <View className="flex-row gap-3">
-              <TouchableOpacity
-                className="h-12 flex-1 items-center justify-center rounded-xl border border-muted/30 bg-background"
-                onPress={handleCancelar}
-                disabled={enviando}
-              >
-                <Text className="font-medium text-base text-muted">Cancelar</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                className="h-12 flex-1 items-center justify-center rounded-xl"
-                style={{ backgroundColor: selectedSentimento?.color }}
-                onPress={handleEnviarSentimento}
-                disabled={enviando}
-              >
-                {enviando ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text className="font-semibold text-base text-white">Enviar</Text>
-                )}
-              </TouchableOpacity>
-            </View>
+            </TouchableWithoutFeedback>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </SafeAreaView>
   );
