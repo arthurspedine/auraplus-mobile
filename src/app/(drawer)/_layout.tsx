@@ -1,6 +1,6 @@
-import { Header } from "@/components/header"
-import { Ionicons } from "@expo/vector-icons"
-import { Drawer } from "expo-router/drawer"
+import { Header } from "@/components/header";
+import { Ionicons } from "@expo/vector-icons";
+import { Drawer } from "expo-router/drawer";
 
 export default function DrawerLayout() {
   return (
@@ -21,9 +21,15 @@ export default function DrawerLayout() {
         name="home"
         options={{
           title: "Home",
-          drawerIcon: ({ color, size }) => (
-            <Ionicons name="home" color={color} size={size} />
-          ),
+          drawerIcon: ({ color, size }) => <Ionicons name="home" color={color} size={size} />,
+        }}
+      />
+
+      <Drawer.Screen
+        name="equipe"
+        options={{
+          title: "Minha Equipe",
+          drawerIcon: ({ color, size }) => <Ionicons name="people" color={color} size={size} />,
         }}
       />
 
@@ -41,5 +47,5 @@ export default function DrawerLayout() {
         }}
       />
     </Drawer>
-  )
+  );
 }
