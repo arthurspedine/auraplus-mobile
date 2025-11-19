@@ -5,4 +5,6 @@ export interface Usuario {
   role: string;
   ativo: boolean;
   cargo: string | null;
+  equipeId: number | null;
+  equipeNome: string | null;
 }

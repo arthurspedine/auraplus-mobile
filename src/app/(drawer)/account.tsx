@@ -145,6 +145,13 @@ export default function PerfilScreen() {
                     {usuario.cargo || "Sem cargo cadastrado"}
                   </Text>
                 </View>
+
+                <View className="flex-row items-center gap-3 rounded-lg bg-card/50 p-3">
+                  <Ionicons name="people-outline" size={18} color="#1F89DA" />
+                  <Text className="flex-1 text-sm text-text">
+                    {usuario.equipeNome || "Sem equipe atribuída"}
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
