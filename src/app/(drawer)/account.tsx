@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
+  RefreshControl,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -19,6 +21,7 @@ export default function PerfilScreen() {
   const { token } = useAuth();
   const [usuario, setUsuario] = useState<Usuario>();
   const [erro, setErro] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -35,23 +38,30 @@ export default function PerfilScreen() {
     return roles[role] || role;
   };
 
-  useEffect(() => {
-    if (!token) {
-      return;
-    }
-    const fetchData = async () => {
-      try {
-        const response = await request("/usuario/me", "get", null, {
-          authToken: token,
-        });
+  const fetchData = async () => {
+    if (!token) return;
 
-        setUsuario(response as Usuario);
-      } catch (error) {
-        setErro("Erro ao carregar dados do usuário");
-      }
-    };
+    try {
+      const response = await request("/usuario/me", "get", null, {
+        authToken: token,
+      });
+
+      setUsuario(response as Usuario);
+      setErro("");
+    } catch (error) {
+      setErro("Erro ao carregar dados do usuário");
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [token]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
+  };
 
   const handleChangePassword = () => {
     setModalVisible(true);
@@ -102,93 +112,113 @@ export default function PerfilScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background px-6">
-      {/* Header */}
-      <View className="mb-8 flex-row items-center justify-between pt-4">
-        <View className="flex-1">
-          <Text className="font-extrabold text-3xl text-text">Perfil</Text>
-          <Text className="mt-1 text-sm text-muted">{usuario?.nome || "Carregando..."}</Text>
+    <SafeAreaView className="flex-1 bg-background">
+      <ScrollView
+        className="flex-1 px-6"
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#1F89DA"
+            colors={["#1F89DA"]}
+          />
+        }
+      >
+        {/* Header */}
+        <View className="mb-8 flex-row items-center justify-between pt-4">
+          <View className="flex-1">
+            <Text className="font-extrabold text-3xl text-text">Perfil</Text>
+            <Text className="mt-1 text-sm text-muted">{usuario?.nome || "Carregando..."}</Text>
+          </View>
+          <TouchableOpacity onPress={() => router.back()} className="rounded-full bg-card p-3">
+            <Ionicons name="arrow-back" size={24} color="#1F89DA" />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => router.back()} className="rounded-full bg-card p-3">
-          <Ionicons name="arrow-back" size={24} color="#1F89DA" />
-        </TouchableOpacity>
-      </View>
 
-      {usuario && !erro ? (
-        <View className="gap-5">
-          {/* Card Principal do Usuário */}
-          <View className="overflow-hidden rounded-2xl bg-gradient-to-br">
-            <View className="bg-primary/20 p-6">
-              <View className="mb-4 flex-row items-center justify-between">
-                <View className="flex-row items-center gap-4">
-                  <View className="h-16 w-16 items-center justify-center rounded-full bg-primary">
-                    <Text className="font-bold text-2xl text-white">
-                      {usuario.nome.charAt(0).toUpperCase()}
+        {usuario && !erro ? (
+          <View className="gap-5">
+            {/* Card Principal do Usuário */}
+            <View className="overflow-hidden rounded-2xl bg-gradient-to-br">
+              <View className="bg-primary/20 p-6">
+                <View className="mb-4 flex-row items-center justify-between">
+                  <View className="flex-row items-center gap-4">
+                    <View className="h-16 w-16 items-center justify-center rounded-full bg-primary">
+                      <Text className="font-bold text-2xl text-white">
+                        {usuario.nome.charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
+                    <View>
+                      <Text className="font-bold text-xl text-text">{usuario.nome}</Text>
+                      <Text className="mt-1 text-sm text-primary">{getRoleName(usuario.role)}</Text>
+                    </View>
+                  </View>
+                </View>
+
+                <View className="gap-3">
+                  <View className="flex-row items-center gap-3 rounded-lg bg-card/50 p-3">
+                    <Ionicons name="mail-outline" size={18} color="#1F89DA" />
+                    <Text className="flex-1 text-sm text-text">{usuario.email}</Text>
+                  </View>
+
+                  <View className="flex-row items-center gap-3 rounded-lg bg-card/50 p-3">
+                    <Ionicons name="briefcase-outline" size={18} color="#1F89DA" />
+                    <Text className="flex-1 text-sm text-text">
+                      {usuario.cargo || "Sem cargo cadastrado"}
                     </Text>
                   </View>
-                  <View>
-                    <Text className="font-bold text-xl text-text">{usuario.nome}</Text>
-                    <Text className="mt-1 text-sm text-primary">{getRoleName(usuario.role)}</Text>
-                  </View>
-                </View>
-              </View>
 
-              <View className="gap-3">
-                <View className="flex-row items-center gap-3 rounded-lg bg-card/50 p-3">
-                  <Ionicons name="mail-outline" size={18} color="#1F89DA" />
-                  <Text className="flex-1 text-sm text-text">{usuario.email}</Text>
-                </View>
-
-                <View className="flex-row items-center gap-3 rounded-lg bg-card/50 p-3">
-                  <Ionicons name="briefcase-outline" size={18} color="#1F89DA" />
-                  <Text className="flex-1 text-sm text-text">
-                    {usuario.cargo || "Sem cargo cadastrado"}
-                  </Text>
-                </View>
-
-                <View className="flex-row items-center gap-3 rounded-lg bg-card/50 p-3">
-                  <Ionicons name="people-outline" size={18} color="#1F89DA" />
-                  <Text className="flex-1 text-sm text-text">
-                    {usuario.equipeNome || "Sem equipe atribuída"}
-                  </Text>
+                  <TouchableOpacity
+                    className="flex-row items-center gap-3 rounded-lg bg-card/50 p-3"
+                    onPress={() => router.push("/(drawer)/equipe")}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="people-outline" size={18} color="#1F89DA" />
+                    <Text className="flex-1 text-sm text-text">
+                      {usuario.equipeNome || "Sem equipe atribuída"}
+                    </Text>
+                    {usuario.equipeNome && (
+                      <Ionicons name="chevron-forward" size={16} color="#1F89DA" />
+                    )}
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
-          </View>
 
-          {/* Ações Rápidas */}
-          <View className="rounded-2xl bg-card p-5">
-            <Text className="mb-4 font-bold text-base text-text">Configurações</Text>
+            {/* Ações Rápidas */}
+            <View className="rounded-2xl bg-card p-5">
+              <Text className="mb-4 font-bold text-base text-text">Configurações</Text>
 
-            <TouchableOpacity
-              className="flex-row items-center justify-between rounded-lg border border-muted/20 bg-secondary p-4"
-              onPress={handleChangePassword}
-            >
-              <View className="flex-row items-center gap-3">
-                <View className="h-10 w-10 items-center justify-center rounded-full bg-primary/20">
-                  <Ionicons name="key-outline" size={20} color="#1F89DA" />
+              <TouchableOpacity
+                className="flex-row items-center justify-between rounded-lg border border-muted/20 bg-secondary p-4"
+                onPress={handleChangePassword}
+              >
+                <View className="flex-row items-center gap-3">
+                  <View className="h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                    <Ionicons name="key-outline" size={20} color="#1F89DA" />
+                  </View>
+                  <View>
+                    <Text className="font-medium text-text">Alterar Senha</Text>
+                    <Text className="text-muted text-xs">Atualize sua senha de acesso</Text>
+                  </View>
                 </View>
-                <View>
-                  <Text className="font-medium text-text">Alterar Senha</Text>
-                  <Text className="text-muted text-xs">Atualize sua senha de acesso</Text>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#1F89DA" />
-            </TouchableOpacity>
+                <Ionicons name="chevron-forward" size={20} color="#1F89DA" />
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      ) : (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#1F89DA" />
-          <Text className="mt-4 text-muted">Carregando perfil...</Text>
-        </View>
-      )}
-      {erro && (
-        <View className="flex-1 items-center justify-center">
-          <Ionicons name="alert-circle" size={48} color="#ef4444" />
-          <Text className="mt-4 text-center text-base text-red-500">{erro}</Text>
-        </View>
-      )}
+        ) : (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color="#1F89DA" />
+            <Text className="mt-4 text-muted">Carregando perfil...</Text>
+          </View>
+        )}
+        {erro && (
+          <View className="flex-1 items-center justify-center">
+            <Ionicons name="alert-circle" size={48} color="#ef4444" />
+            <Text className="mt-4 text-center text-base text-red-500">{erro}</Text>
+          </View>
+        )}
+      </ScrollView>
 
       {/* Modal para alterar senha */}
       <Modal
