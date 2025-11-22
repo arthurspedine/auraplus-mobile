@@ -48,7 +48,7 @@ interface NovoMembro {
 }
 
 export default function EquipePage() {
-  const { token } = useAuth();
+  const { token, refreshUsuario } = useAuth();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [usuarios, setUsuarios] = useState<UsuarioEquipe[]>([]);
   const [nomeEquipe, setNomeEquipe] = useState<string | null>(null);
@@ -71,6 +71,13 @@ export default function EquipePage() {
   const [modalAddVisible, setModalAddVisible] = useState(false);
   const [novosMembros, setNovosMembros] = useState<NovoMembro[]>([{ email: "", cargo: "" }]);
   const [adicionandoMembros, setAdicionandoMembros] = useState(false);
+
+  // Modal de criar equipe
+  const [modalCriarEquipeVisible, setModalCriarEquipeVisible] = useState(false);
+  const [nomeNovaEquipe, setNomeNovaEquipe] = useState("");
+  const [descricaoNovaEquipe, setDescricaoNovaEquipe] = useState("");
+  const [cargoCriador, setCargoCriador] = useState("");
+  const [criandoEquipe, setCriandoEquipe] = useState(false);
 
   const pageSize = 10;
 
@@ -192,6 +199,59 @@ export default function EquipePage() {
     const novosMembrosCopy = [...novosMembros];
     novosMembrosCopy[index][field] = value;
     setNovosMembros(novosMembrosCopy);
+  };
+
+  const handleAbrirModalCriarEquipe = () => {
+    setModalCriarEquipeVisible(true);
+  };
+
+  const handleFecharModalCriarEquipe = () => {
+    setModalCriarEquipeVisible(false);
+    setNomeNovaEquipe("");
+    setDescricaoNovaEquipe("");
+    setCargoCriador("");
+  };
+
+  const handleCriarEquipe = async () => {
+    if (!token) return;
+
+    if (!nomeNovaEquipe.trim()) {
+      Alert.alert("Erro", "O nome da equipe é obrigatório.");
+      return;
+    }
+
+    if (!cargoCriador.trim()) {
+      Alert.alert("Erro", "Seu cargo é obrigatório.");
+      return;
+    }
+
+    setCriandoEquipe(true);
+    try {
+      await request(
+        "/equipe",
+        "post",
+        {
+          nomeEquipe: nomeNovaEquipe,
+          descricaoEquipe: descricaoNovaEquipe,
+          cargoCriador: cargoCriador,
+        },
+        { authToken: token }
+      );
+
+      Alert.alert("Sucesso! 🎉", "Equipe criada com sucesso!");
+      handleFecharModalCriarEquipe();
+      await refreshUsuario(); // Atualiza dados do usuário no contexto
+      fetchData(0, true);
+    } catch (error: any) {
+      console.error("Erro ao criar equipe:", error);
+      const mensagemErro =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Não foi possível criar a equipe. Tente novamente.";
+      Alert.alert("Erro", mensagemErro);
+    } finally {
+      setCriandoEquipe(false);
+    }
   };
 
   const handleRemoverMembro = async (idUser: number, nome: string) => {
@@ -516,9 +576,18 @@ export default function EquipePage() {
             <Text className="mt-4 text-center text-base text-text">
               Você não faz parte de uma equipe
             </Text>
-            <Text className="mt-2 text-center text-sm text-muted">
-              Entre em contato com seu gestor para ser adicionado a uma equipe.
+            <Text className="mt-2 mb-6 text-center text-sm text-muted">
+              Crie sua própria equipe ou entre em contato com seu gestor para ser adicionado.
             </Text>
+
+            <TouchableOpacity
+              className="flex-row items-center gap-2 rounded-xl bg-primary px-6 py-3"
+              onPress={handleAbrirModalCriarEquipe}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="add-circle" size={20} color="#fff" />
+              <Text className="font-semibold text-base text-white">Criar Equipe</Text>
+            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
@@ -719,6 +788,113 @@ export default function EquipePage() {
                     )}
                   </TouchableOpacity>
                 </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* Modal de Criar Equipe */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalCriarEquipeVisible}
+        onRequestClose={handleFecharModalCriarEquipe}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View className="flex-1 items-center justify-center bg-black/80 px-6">
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View className="w-full max-w-96 rounded-3xl bg-card p-6">
+                {/* Header */}
+                <View className="mb-6 flex-row items-center justify-between">
+                  <View className="flex-row items-center gap-3">
+                    <View className="h-12 w-12 items-center justify-center rounded-full bg-primary/20">
+                      <Ionicons name="people" size={24} color="#1F89DA" />
+                    </View>
+                    <Text className="font-bold text-xl text-text">Criar Equipe</Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={handleFecharModalCriarEquipe}
+                    className="rounded-full bg-muted/20 p-2"
+                    disabled={criandoEquipe}
+                  >
+                    <Ionicons name="close" size={24} color="#999" />
+                  </TouchableOpacity>
+                </View>
+
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  {/* Nome da Equipe */}
+                  <View className="mb-4">
+                    <Text className="mb-2 font-medium text-sm text-text">Nome da Equipe *</Text>
+                    <View className="flex-row items-center rounded-lg border border-muted/30 bg-secondary px-3">
+                      <Ionicons name="people" size={16} color="#1F89DA" />
+                      <TextInput
+                        className="flex-1 py-2 pl-2 text-sm text-text"
+                        placeholder="Ex: Time de Desenvolvimento"
+                        value={nomeNovaEquipe}
+                        onChangeText={setNomeNovaEquipe}
+                        placeholderTextColor="#999"
+                        autoCapitalize="words"
+                      />
+                    </View>
+                  </View>
+
+                  {/* Descrição da Equipe */}
+                  <View className="mb-4">
+                    <Text className="mb-2 font-medium text-sm text-text">Descrição</Text>
+                    <View className="rounded-lg border border-muted/30 bg-secondary px-3 py-2">
+                      <TextInput
+                        className="text-sm text-text"
+                        placeholder="Descreva os objetivos da equipe..."
+                        value={descricaoNovaEquipe}
+                        onChangeText={setDescricaoNovaEquipe}
+                        placeholderTextColor="#999"
+                        multiline
+                        numberOfLines={3}
+                        textAlignVertical="top"
+                      />
+                    </View>
+                  </View>
+
+                  {/* Cargo do Criador */}
+                  <View className="mb-6">
+                    <Text className="mb-2 font-medium text-sm text-text">Seu Cargo *</Text>
+                    <View className="flex-row items-center rounded-lg border border-muted/30 bg-secondary px-3">
+                      <Ionicons name="briefcase" size={16} color="#1F89DA" />
+                      <TextInput
+                        className="flex-1 py-2 pl-2 text-sm text-text"
+                        placeholder="Ex: Gerente de Projetos"
+                        value={cargoCriador}
+                        onChangeText={setCargoCriador}
+                        placeholderTextColor="#999"
+                        autoCapitalize="words"
+                      />
+                    </View>
+                  </View>
+
+                  {/* Botões */}
+                  <View className="flex-row gap-3">
+                    <TouchableOpacity
+                      className="h-12 flex-1 items-center justify-center rounded-xl border border-muted/30 bg-background"
+                      onPress={handleFecharModalCriarEquipe}
+                      disabled={criandoEquipe}
+                    >
+                      <Text className="font-medium text-base text-muted">Cancelar</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      className="h-12 flex-1 items-center justify-center rounded-xl bg-primary"
+                      onPress={handleCriarEquipe}
+                      disabled={criandoEquipe}
+                    >
+                      {criandoEquipe ? (
+                        <ActivityIndicator color="#fff" />
+                      ) : (
+                        <Text className="font-semibold text-base text-white">Criar</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
               </View>
             </TouchableWithoutFeedback>
           </View>
