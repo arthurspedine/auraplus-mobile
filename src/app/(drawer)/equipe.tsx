@@ -42,6 +42,11 @@ interface EquipeResponse {
   usuarios: PageableResponse;
 }
 
+interface NovoMembro {
+  email: string;
+  cargo: string;
+}
+
 export default function EquipePage() {
   const { token } = useAuth();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
@@ -54,11 +59,19 @@ export default function EquipePage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+
+  // Modal de reconhecimento
   const [modalVisible, setModalVisible] = useState(false);
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<UsuarioEquipe | null>(null);
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [enviando, setEnviando] = useState(false);
+
+  // Modal de adicionar membros
+  const [modalAddVisible, setModalAddVisible] = useState(false);
+  const [novosMembros, setNovosMembros] = useState<NovoMembro[]>([{ email: "", cargo: "" }]);
+  const [adicionandoMembros, setAdicionandoMembros] = useState(false);
+
   const pageSize = 10;
 
   useEffect(() => {
@@ -153,6 +166,136 @@ export default function EquipePage() {
     setDescricao("");
   };
 
+  const handleAbrirModalAdd = () => {
+    setModalAddVisible(true);
+    setNovosMembros([{ email: "", cargo: "" }]);
+  };
+
+  const handleFecharModalAdd = () => {
+    setModalAddVisible(false);
+    setNovosMembros([{ email: "", cargo: "" }]);
+  };
+
+  const handleAdicionarCampo = () => {
+    setNovosMembros([...novosMembros, { email: "", cargo: "" }]);
+  };
+
+  const handleRemoverCampo = (index: number) => {
+    if (novosMembros.length > 1) {
+      const novosMembrosCopy = [...novosMembros];
+      novosMembrosCopy.splice(index, 1);
+      setNovosMembros(novosMembrosCopy);
+    }
+  };
+
+  const handleAtualizarMembro = (index: number, field: keyof NovoMembro, value: string) => {
+    const novosMembrosCopy = [...novosMembros];
+    novosMembrosCopy[index][field] = value;
+    setNovosMembros(novosMembrosCopy);
+  };
+
+  const handleRemoverMembro = async (idUser: number, nome: string) => {
+    Alert.alert("Remover membro", `Tem certeza que deseja remover ${nome} da equipe?`, [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Remover",
+        style: "destructive",
+        onPress: async () => {
+          if (!token) return;
+
+          try {
+            await request(`/equipe/usuarios/${idUser}`, "delete", null, { authToken: token });
+
+            Alert.alert("Sucesso", `${nome} foi removido(a) da equipe.`);
+            fetchData(0, true);
+          } catch (error: any) {
+            console.error("Erro ao remover membro:", error);
+            const mensagemErro =
+              error?.response?.data?.message ||
+              error?.message ||
+              "Não foi possível remover o membro. Tente novamente.";
+            Alert.alert("Erro", mensagemErro);
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleAdicionarMembros = async () => {
+    if (!token) return;
+
+    // Validação
+    const membrosValidos = novosMembros.filter((m) => m.email.trim() && m.cargo.trim());
+
+    if (membrosValidos.length === 0) {
+      Alert.alert("Erro", "Preencha pelo menos um membro com email e cargo válidos.");
+      return;
+    }
+
+    // Valida emails
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailsInvalidos = membrosValidos.filter((m) => !emailRegex.test(m.email));
+
+    if (emailsInvalidos.length > 0) {
+      Alert.alert("Erro", "Um ou mais emails são inválidos.");
+      return;
+    }
+
+    setAdicionandoMembros(true);
+    try {
+      const response: any = await request("/equipe/usuarios", "post", membrosValidos, {
+        authToken: token,
+      });
+
+      // Coletar todas as mensagens de erro
+      const mensagensErro: string[] = [];
+
+      if (response?.naoEncontrados && response.naoEncontrados.length > 0) {
+        const emails = response.naoEncontrados.join(", ");
+        mensagensErro.push(`❌ Não encontrados: ${emails}`);
+      }
+
+      if (response?.jaEmOutroTime && response.jaEmOutroTime.length > 0) {
+        const emails = response.jaEmOutroTime.join(", ");
+        mensagensErro.push(`⚠️ Já em outro time: ${emails}`);
+      }
+
+      if (response?.jaNaEquipe && response.jaNaEquipe.length > 0) {
+        const emails = response.jaNaEquipe.join(", ");
+        mensagensErro.push(`ℹ️ Já nesta equipe: ${emails}`);
+      }
+
+      // Se houver erros, mostrar todos de uma vez
+      if (mensagensErro.length > 0) {
+        Alert.alert("Atenção", mensagensErro.join("\n\n"));
+        return;
+      }
+
+      // Verificar se adicionou com sucesso
+      if (response?.adicionados && response.adicionados.length > 0) {
+        Alert.alert(
+          "Sucesso! 🎉",
+          `${response.adicionados.length} ${
+            response.adicionados.length === 1 ? "membro adicionado" : "membros adicionados"
+          } com sucesso.`
+        );
+        handleFecharModalAdd();
+        fetchData(0, true); // Atualiza a lista
+      } else {
+        Alert.alert("Aviso", "Nenhum membro foi adicionado.");
+      }
+    } catch (error: any) {
+      console.error("Erro ao adicionar membros:", error);
+      const mensagemErro =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Não foi possível adicionar os membros. Tente novamente.";
+      Alert.alert("Erro", mensagemErro);
+    } finally {
+      setAdicionandoMembros(false);
+    }
+  };
+
   const handleEnviarReconhecimento = async () => {
     if (!usuarioSelecionado || !token) return;
 
@@ -237,16 +380,30 @@ export default function EquipePage() {
             )}
           </View>
 
-          {/* Botão de reconhecimento (só para outros usuários) */}
-          {!isUsuarioLogado && (
-            <TouchableOpacity
-              className="h-10 w-10 items-center justify-center rounded-full bg-green-500"
-              onPress={() => handleAbrirReconhecimento(item)}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="trophy" size={20} color="#fff" />
-            </TouchableOpacity>
-          )}
+          {/* Botões de ação */}
+          <View className="flex-row gap-2">
+            {/* Botão de reconhecimento (só para outros usuários) */}
+            {!isUsuarioLogado && (
+              <TouchableOpacity
+                className="h-10 w-10 items-center justify-center rounded-full bg-green-500"
+                onPress={() => handleAbrirReconhecimento(item)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="trophy" size={20} color="#fff" />
+              </TouchableOpacity>
+            )}
+
+            {/* Botão de remover (só para ADMIN e não pode remover a si mesmo) */}
+            {usuario?.role === "ADMIN" && !isUsuarioLogado && (
+              <TouchableOpacity
+                className="h-10 w-10 items-center justify-center rounded-full bg-red-500"
+                onPress={() => handleRemoverMembro(item.idUser, item.nome)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="person-remove" size={20} color="#fff" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
     );
@@ -321,11 +478,23 @@ export default function EquipePage() {
             {/* Lista de Membros */}
             <View className="mb-4 flex-row items-center justify-between">
               <Text className="font-bold text-lg text-text">Membros</Text>
-              {totalPages > 1 && (
-                <Text className="text-sm text-muted">
-                  Página {currentPage + 1} de {totalPages}
-                </Text>
-              )}
+              <View className="flex-row items-center gap-3">
+                {usuario?.role === "ADMIN" && (
+                  <TouchableOpacity
+                    className="flex-row items-center gap-2 rounded-xl bg-primary px-4 py-2"
+                    onPress={handleAbrirModalAdd}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="person-add" size={18} color="#fff" />
+                    <Text className="font-semibold text-sm text-white">Adicionar</Text>
+                  </TouchableOpacity>
+                )}
+                {totalPages > 1 && (
+                  <Text className="text-sm text-muted">
+                    Página {currentPage + 1} de {totalPages}
+                  </Text>
+                )}
+              </View>
             </View>
 
             <FlatList
@@ -429,6 +598,124 @@ export default function EquipePage() {
                       <ActivityIndicator color="#fff" />
                     ) : (
                       <Text className="font-semibold text-base text-white">Enviar</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* Modal de Adicionar Membros */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalAddVisible}
+        onRequestClose={handleFecharModalAdd}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View className="flex-1 items-center justify-center bg-black/80 px-6">
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View className="w-full max-w-md rounded-3xl bg-card p-6">
+                {/* Header do Modal */}
+                <View className="mb-6 flex-row items-center justify-between">
+                  <View className="flex-row items-center gap-3">
+                    <View className="h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                      <Ionicons name="person-add" size={20} color="#1F89DA" />
+                    </View>
+                    <Text className="font-bold text-xl text-text">Adicionar Membros</Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={handleFecharModalAdd}
+                    className="rounded-full bg-secondary p-2"
+                  >
+                    <Ionicons name="close" size={20} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Lista de Campos */}
+                <ScrollView className="max-h-96" showsVerticalScrollIndicator={false}>
+                  {novosMembros.map((membro, index) => (
+                    <View key={index} className="mb-4">
+                      <View className="mb-2 flex-row items-center justify-between">
+                        <Text className="font-semibold text-sm text-text">Membro {index + 1}</Text>
+                        {novosMembros.length > 1 && (
+                          <TouchableOpacity
+                            onPress={() => handleRemoverCampo(index)}
+                            className="rounded-full bg-red-500/20 p-1"
+                          >
+                            <Ionicons name="trash" size={16} color="#ef4444" />
+                          </TouchableOpacity>
+                        )}
+                      </View>
+
+                      {/* Campo Email */}
+                      <View className="mb-2">
+                        <Text className="mb-1 font-medium text-xs text-muted">Email</Text>
+                        <View className="flex-row items-center rounded-lg border border-muted/30 bg-secondary px-3">
+                          <Ionicons name="mail" size={16} color="#1F89DA" />
+                          <TextInput
+                            className="flex-1 py-2 pl-2 text-sm text-text"
+                            placeholder="email@exemplo.com"
+                            value={membro.email}
+                            onChangeText={(text) => handleAtualizarMembro(index, "email", text)}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            placeholderTextColor="#999"
+                          />
+                        </View>
+                      </View>
+
+                      {/* Campo Cargo */}
+                      <View>
+                        <Text className="mb-1 font-medium text-xs text-muted">Cargo</Text>
+                        <View className="flex-row items-center rounded-lg border border-muted/30 bg-secondary px-3">
+                          <Ionicons name="briefcase" size={16} color="#1F89DA" />
+                          <TextInput
+                            className="flex-1 py-2 pl-2 text-sm text-text"
+                            placeholder="Ex: Desenvolvedor"
+                            value={membro.cargo}
+                            onChangeText={(text) => handleAtualizarMembro(index, "cargo", text)}
+                            placeholderTextColor="#999"
+                          />
+                        </View>
+                      </View>
+                    </View>
+                  ))}
+
+                  {/* Botão Adicionar Mais */}
+                  <TouchableOpacity
+                    className="mb-4 flex-row items-center justify-center gap-2 rounded-xl border border-dashed border-primary/50 bg-primary/10 py-3"
+                    onPress={handleAdicionarCampo}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="add-circle" size={20} color="#1F89DA" />
+                    <Text className="font-semibold text-sm text-primary">
+                      Adicionar outro membro
+                    </Text>
+                  </TouchableOpacity>
+                </ScrollView>
+
+                {/* Botões de Ação */}
+                <View className="mt-4 flex-row gap-3">
+                  <TouchableOpacity
+                    className="h-12 flex-1 items-center justify-center rounded-xl border border-muted/30 bg-background"
+                    onPress={handleFecharModalAdd}
+                    disabled={adicionandoMembros}
+                  >
+                    <Text className="font-medium text-base text-muted">Cancelar</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    className="h-12 flex-1 items-center justify-center rounded-xl bg-primary"
+                    onPress={handleAdicionarMembros}
+                    disabled={adicionandoMembros}
+                  >
+                    {adicionandoMembros ? (
+                      <ActivityIndicator color="#fff" />
+                    ) : (
+                      <Text className="font-semibold text-base text-white">Adicionar</Text>
                     )}
                   </TouchableOpacity>
                 </View>
