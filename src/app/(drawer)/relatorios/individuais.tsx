@@ -1,10 +1,29 @@
+import { request } from "@/helper/request";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
-import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+interface RelatorioIndividual {
+  numeroIndicacoes: number;
+  descritivo: string;
+  nomeUsuario: string;
+  mes: string;
+  ano: string;
+}
 
 export default function RelatoriosIndividuaisScreen() {
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [relatorio, setRelatorio] = useState<RelatorioIndividual | null>(null);
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
 
@@ -27,11 +46,40 @@ export default function RelatoriosIndividuaisScreen() {
     { numero: 11, nome: "Dezembro" },
   ];
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    // Aqui virá a lógica de carregar dados
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setRefreshing(false);
+  const carregarRelatorio = async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) return;
+
+      const response: any = await request(
+        `/relatorios/usuario?mes=${mesSelecionado}&ano=${anoSelecionado}`,
+        "get",
+        null,
+        { authToken: token }
+      );
+
+      setRelatorio(response as RelatorioIndividual);
+    } catch (error) {
+      console.error("Erro ao carregar relatório:", error);
+      setRelatorio(null);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    carregarRelatorio();
+  }, [mesSelecionado, anoSelecionado]);
+
+  const handleRefresh = () => {
+    carregarRelatorio(true);
   };
 
   return (
@@ -129,17 +177,74 @@ export default function RelatoriosIndividuaisScreen() {
             </View>
           </View>
 
-          {/* Placeholder de Conteúdo */}
-          <View className="flex-1 items-center justify-center py-20">
-            <Ionicons name="stats-chart-outline" size={64} color="#1F89DA" />
-            <Text className="mt-4 text-center text-base text-text">
-              Relatórios em desenvolvimento
-            </Text>
-            <Text className="mt-2 text-center text-sm text-muted">
-              Em breve você poderá visualizar suas estatísticas individuais de sentimentos e
-              reconhecimentos recebidos.
-            </Text>
-          </View>
+          {/* Conteúdo do Relatório */}
+          {loading ? (
+            <View className="flex-1 items-center justify-center py-20">
+              <ActivityIndicator size="large" color="#1F89DA" />
+            </View>
+          ) : relatorio ? (
+            <View className="gap-4 pb-6">
+              {/* Card de Estatísticas */}
+              <View className="overflow-hidden rounded-3xl bg-card p-6">
+                <View className="mb-4 flex-row items-center gap-2">
+                  <Ionicons name="stats-chart" size={24} color="#1F89DA" />
+                  <Text className="font-bold text-xl text-text">Estatísticas</Text>
+                </View>
+
+                {/* Nome do Usuário */}
+                <View className="mb-4 flex-row items-center gap-2 rounded-xl bg-primary/10 p-3">
+                  <Ionicons name="person" size={20} color="#1F89DA" />
+                  <Text className="flex-1 font-semibold text-base text-text">
+                    {relatorio.nomeUsuario}
+                  </Text>
+                </View>
+
+                {/* Reconhecimentos Recebidos */}
+                <View className="items-center rounded-2xl bg-green-500/10 p-6">
+                  <View className="mb-3 h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
+                    <Ionicons name="trophy" size={32} color="#22c55e" />
+                  </View>
+                  <Text className="mb-1 font-bold text-4xl text-green-500">
+                    {relatorio.numeroIndicacoes}
+                  </Text>
+                  <Text className="text-center font-medium text-sm text-muted">
+                    {relatorio.numeroIndicacoes === 1
+                      ? "Reconhecimento recebido"
+                      : "Reconhecimentos recebidos"}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Card de Resumo Gerado por IA */}
+              {relatorio.descritivo && (
+                <View className="overflow-hidden rounded-3xl bg-card p-6">
+                  <View className="mb-4 flex-row items-center gap-2">
+                    <Ionicons name="sparkles" size={24} color="#1F89DA" />
+                    <Text className="font-bold text-xl text-text">Resumo do Período</Text>
+                  </View>
+
+                  <View className="rounded-xl bg-primary/5 p-4">
+                    <Text className="leading-6 text-sm text-text">{relatorio.descritivo}</Text>
+                  </View>
+
+                  <View className="mt-3 flex-row items-center gap-2">
+                    <Ionicons name="information-circle" size={16} color="#666" />
+                    <Text className="text-muted text-xs">Resumo gerado por IA</Text>
+                  </View>
+                </View>
+              )}
+            </View>
+          ) : (
+            <View className="flex-1 items-center justify-center py-20">
+              <Ionicons name="document-text-outline" size={64} color="#1F89DA" />
+              <Text className="mt-4 text-center text-base text-text">
+                Nenhum relatório disponível
+              </Text>
+              <Text className="mt-2 text-center text-sm text-muted">
+                Não há dados para o período selecionado.
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
