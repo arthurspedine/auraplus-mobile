@@ -34,6 +34,14 @@ export default function DrawerLayout() {
       />
 
       <Drawer.Screen
+        name="relatorios"
+        options={{
+          title: "Relatórios",
+          drawerIcon: ({ color, size }) => <Ionicons name="bar-chart" color={color} size={size} />,
+        }}
+      />
+
+      <Drawer.Screen
         name="account"
         options={{
           drawerItemStyle: { display: "none" },
