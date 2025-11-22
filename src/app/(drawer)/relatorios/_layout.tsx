@@ -1,11 +1,25 @@
 import { useAuth } from "@/context/auth-context";
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { Tabs, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function RelatoriosTabsLayout() {
-  const { usuario } = useAuth();
+  const { usuario, refreshUsuario } = useAuth();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Atualiza dados do usuário ao focar na tela
+  useFocusEffect(
+    useCallback(() => {
+      const refresh = async () => {
+        setIsRefreshing(true);
+        await refreshUsuario();
+        setIsRefreshing(false);
+      };
+      refresh();
+    }, [])
+  );
 
   // Se o usuário não está em uma equipe, mostra aviso
   if (!usuario?.equipeId) {
