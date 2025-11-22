@@ -2,6 +2,7 @@ import { useAuth } from "@/context/auth-context";
 import { request } from "@/helper/request";
 import type { Usuario } from "@/interfaces/interfaces";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -41,6 +42,7 @@ const sentimentos: SentimentoOption[] = [
 
 export default function HomePage() {
   const { token } = useAuth();
+  const router = useRouter();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -244,22 +246,67 @@ export default function HomePage() {
             )}
           </View>
 
-          {/* Cards de Recursos Futuros */}
-          <View className="mb-6 gap-3">
-            <View className="flex-row items-center gap-2 rounded-2xl border border-primary/30 bg-card p-4">
-              <Ionicons name="star" size={20} color="#1F89DA" />
-              <Text className="flex-1 text-sm text-muted">
-                <Text className="font-semibold text-text">Reconhecimentos</Text> - Em breve você
-                poderá reconhecer seus colegas
-              </Text>
+          {/* Ações Rápidas */}
+          <View className="mb-6">
+            <View className="mb-4 flex-row items-center gap-2">
+              <Ionicons name="flash" size={20} color="#1F89DA" />
+              <Text className="font-bold text-lg text-text">Ações Rápidas</Text>
             </View>
 
-            <View className="flex-row items-center gap-2 rounded-2xl border border-primary/30 bg-card p-4">
-              <Ionicons name="bar-chart" size={20} color="#1F89DA" />
-              <Text className="flex-1 text-sm text-muted">
-                <Text className="font-semibold text-text">Relatórios</Text> - Visualize estatísticas
-                mensais da equipe
-              </Text>
+            <View className="flex-row gap-3">
+              {/* Botão Minha Equipe */}
+              <TouchableOpacity
+                className="flex-1 overflow-hidden rounded-2xl bg-card p-4"
+                onPress={() => router.push("/(drawer)/equipe")}
+                activeOpacity={0.7}
+              >
+                <View className="mb-3 h-12 w-12 items-center justify-center rounded-full bg-primary/20">
+                  <Ionicons name="people" size={24} color="#1F89DA" />
+                </View>
+                <Text className="mb-1 font-semibold text-sm text-text">Minha Equipe</Text>
+                <Text className="text-muted text-xs">Ver membros e enviar reconhecimentos</Text>
+              </TouchableOpacity>
+
+              {/* Botão Relatórios */}
+              <TouchableOpacity
+                className="flex-1 overflow-hidden rounded-2xl bg-card p-4"
+                onPress={() => router.push("/(drawer)/relatorios/individuais")}
+                activeOpacity={0.7}
+              >
+                <View className="mb-3 h-12 w-12 items-center justify-center rounded-full bg-primary/20">
+                  <Ionicons name="bar-chart" size={24} color="#1F89DA" />
+                </View>
+                <Text className="mb-1 font-semibold text-sm text-text">Relatórios</Text>
+                <Text className="text-muted text-xs">Resumos mensais por IA</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View className="mt-3 flex-row gap-3">
+              {/* Botão Perfil */}
+              <TouchableOpacity
+                className="flex-1 overflow-hidden rounded-2xl bg-card p-4"
+                onPress={() => router.push("/(drawer)/account")}
+                activeOpacity={0.7}
+              >
+                <View className="mb-3 h-12 w-12 items-center justify-center rounded-full bg-primary/20">
+                  <Ionicons name="person" size={24} color="#1F89DA" />
+                </View>
+                <Text className="mb-1 font-semibold text-sm text-text">Meu Perfil</Text>
+                <Text className="text-muted text-xs">Ver informações pessoais</Text>
+              </TouchableOpacity>
+
+              {/* Botão Sobre */}
+              <TouchableOpacity
+                className="flex-1 overflow-hidden rounded-2xl bg-card p-4"
+                onPress={() => router.push("/(drawer)/home/sobre")}
+                activeOpacity={0.7}
+              >
+                <View className="mb-3 h-12 w-12 items-center justify-center rounded-full bg-primary/20">
+                  <Ionicons name="information-circle" size={24} color="#1F89DA" />
+                </View>
+                <Text className="mb-1 font-semibold text-sm text-text">Sobre</Text>
+                <Text className="text-muted text-xs">Conheça o Aura+</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
