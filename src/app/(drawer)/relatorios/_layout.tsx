@@ -16,7 +16,7 @@ export default function RelatoriosTabsLayout() {
             <Text className="font-extrabold text-3xl text-text">Relatórios</Text>
           </View>
 
-          <View className="flex-1 items-center justify-center">
+          <View className="flex-1 mt-20 items-center">
             <Ionicons name="analytics-outline" size={64} color="#1F89DA" />
             <Text className="mt-4 text-center text-base text-text">
               Você não faz parte de uma equipe

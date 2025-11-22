@@ -9,11 +9,13 @@ interface JwtPayload {
   nome: string;
   role: number;
   email: string;
+  equipeId?: number;
   exp: number;
 }
 
 interface AuthContextType {
   token: string | null;
+  usuario: JwtPayload | null;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   isLoading: boolean;
@@ -31,6 +33,7 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
+  const [usuario, setUsuario] = useState<JwtPayload | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -44,13 +47,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (storedToken && isValidJwt(storedToken)) {
         setToken(storedToken);
         const decodedToken = jwtDecode<JwtPayload>(storedToken);
+        setUsuario(decodedToken);
         console.log(decodedToken);
       } else {
         setToken(null);
+        setUsuario(null);
       }
     } catch (error) {
       console.error("Error checking auth state:", error);
       setToken(null);
+      setUsuario(null);
     } finally {
       setIsLoading(false);
     }
@@ -76,6 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await AsyncStorage.setItem("jwt_token", receivedToken);
         setToken(receivedToken);
         const decodedToken = jwtDecode<JwtPayload>(receivedToken);
+        setUsuario(decodedToken);
         console.log(decodedToken);
         return { success: true };
       }
@@ -92,13 +99,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await AsyncStorage.removeItem("jwt_token");
       setToken(null);
+      setUsuario(null);
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ token, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ token, usuario, login, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
