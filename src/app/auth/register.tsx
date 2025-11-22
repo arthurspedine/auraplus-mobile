@@ -1,113 +1,97 @@
-import { request } from "@/helper/request"
-import { router } from "expo-router"
-import { useState } from "react"
-import {
-  Alert,
-  Image,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native"
+import { request } from "@/helper/request";
+import { router } from "expo-router";
+import { useState } from "react";
+import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function RegisterPage() {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState<{
-    name?: string
-    email?: string
-    password?: string
-    confirmPassword?: string
-  }>({})
-  const [isLoading, setIsLoading] = useState(false)
+    name?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleRegister = async () => {
     const newErrors: {
-      name?: string
-      email?: string
-      password?: string
-      confirmPassword?: string
-    } = {}
+      name?: string;
+      email?: string;
+      password?: string;
+      confirmPassword?: string;
+    } = {};
 
     if (!name.trim()) {
-      newErrors.name = "Nome é obrigatório"
+      newErrors.name = "Nome é obrigatório";
     }
 
     if (!email.trim()) {
-      newErrors.email = "Email é obrigatório"
+      newErrors.email = "Email é obrigatório";
     } else if (!validateEmail(email)) {
-      newErrors.email = "Email inválido"
+      newErrors.email = "Email inválido";
     }
 
     if (!password.trim()) {
-      newErrors.password = "Senha é obrigatória"
+      newErrors.password = "Senha é obrigatória";
     } else if (password.length < 6) {
-      newErrors.password = "Senha deve ter pelo menos 6 caracteres"
+      newErrors.password = "Senha deve ter pelo menos 6 caracteres";
     }
 
     if (!confirmPassword.trim()) {
-      newErrors.confirmPassword = "Confirmação de senha é obrigatória"
+      newErrors.confirmPassword = "Confirmação de senha é obrigatória";
     } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = "As senhas não coincidem"
+      newErrors.confirmPassword = "As senhas não coincidem";
     }
 
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
+      setErrors(newErrors);
+      return;
     }
 
-    setErrors({})
+    setErrors({});
     const registerData = {
       nome: name,
       email,
       senha: password,
-    }
+    };
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      console.log("Registrando")
+      console.log("Registrando");
 
-      await request("/usuario", "post", registerData)
-      Alert.alert(
-        "Sucesso",
-        "Registro bem-sucedido! Você já pode fazer login com sua nova conta."
-      )
-      setEmail("")
-      setName("")
-      setPassword("")
-      setConfirmPassword("")
-      router.back() // Voltar para a tela de login após registro bem-sucedido
-    } catch (error) {
-      Alert.alert(
-        "Erro",
-        error instanceof Error
-          ? error.message
-          : "Ocorreu um erro ao registrar. Tente novamente."
-      )
-      return
+      await request("/usuario", "post", registerData);
+      Alert.alert("Sucesso", "Registro bem-sucedido! Você já pode fazer login com sua nova conta.");
+      setEmail("");
+      setName("");
+      setPassword("");
+      setConfirmPassword("");
+      router.back(); // Voltar para a tela de login após registro bem-sucedido
+    } catch (error: any) {
+      console.error("Erro ao registrar:", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Ocorreu um erro ao registrar. Tente novamente.";
+      Alert.alert("Erro no cadastro", errorMessage);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <ScrollView className="flex-1 bg-background">
       <View className="flex-1 px-6 pt-20">
         <View className="mb-12 flex-row items-center justify-between">
           <Text className="font-extrabold text-3xl text-text">Criar Conta</Text>
-          <Image
-            source={require("@/assets/icon.png")}
-            className="h-12 w-12"
-            resizeMode="contain"
-          />
+          <Image source={require("@/assets/icon.png")} className="h-12 w-12" resizeMode="contain" />
         </View>
 
         <View className="mb-4">
@@ -117,15 +101,13 @@ export default function RegisterPage() {
             placeholder="Digite seu nome"
             placeholderTextColor="#999"
             value={name}
-            onChangeText={text => {
-              setName(text)
-              if (errors.name) setErrors({ ...errors, name: undefined })
+            onChangeText={(text) => {
+              setName(text);
+              if (errors.name) setErrors({ ...errors, name: undefined });
             }}
             autoCapitalize="words"
           />
-          {errors.name && (
-            <Text className="mt-1 text-red-500 text-xs">{errors.name}</Text>
-          )}
+          {errors.name && <Text className="mt-1 text-red-500 text-xs">{errors.name}</Text>}
         </View>
 
         <View className="mb-4">
@@ -135,16 +117,14 @@ export default function RegisterPage() {
             placeholder="Digite seu email"
             placeholderTextColor="#999"
             value={email}
-            onChangeText={text => {
-              setEmail(text)
-              if (errors.email) setErrors({ ...errors, email: undefined })
+            onChangeText={(text) => {
+              setEmail(text);
+              if (errors.email) setErrors({ ...errors, email: undefined });
             }}
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          {errors.email && (
-            <Text className="mt-1 text-red-500 text-xs">{errors.email}</Text>
-          )}
+          {errors.email && <Text className="mt-1 text-red-500 text-xs">{errors.email}</Text>}
         </View>
 
         <View className="mb-4">
@@ -154,39 +134,32 @@ export default function RegisterPage() {
             placeholder="Digite sua senha"
             placeholderTextColor="#999"
             value={password}
-            onChangeText={text => {
-              setPassword(text)
-              if (errors.password) setErrors({ ...errors, password: undefined })
+            onChangeText={(text) => {
+              setPassword(text);
+              if (errors.password) setErrors({ ...errors, password: undefined });
             }}
             secureTextEntry
             autoCapitalize="none"
           />
-          {errors.password && (
-            <Text className="mt-1 text-red-500 text-xs">{errors.password}</Text>
-          )}
+          {errors.password && <Text className="mt-1 text-red-500 text-xs">{errors.password}</Text>}
         </View>
 
         <View className="mb-6">
-          <Text className="mb-2 font-medium text-sm text-text">
-            Confirmar Senha
-          </Text>
+          <Text className="mb-2 font-medium text-sm text-text">Confirmar Senha</Text>
           <TextInput
             className="rounded-lg border border-muted/30 bg-card px-4 py-3 text-text"
             placeholder="Confirme sua senha"
             placeholderTextColor="#999"
             value={confirmPassword}
-            onChangeText={text => {
-              setConfirmPassword(text)
-              if (errors.confirmPassword)
-                setErrors({ ...errors, confirmPassword: undefined })
+            onChangeText={(text) => {
+              setConfirmPassword(text);
+              if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: undefined });
             }}
             secureTextEntry
             autoCapitalize="none"
           />
           {errors.confirmPassword && (
-            <Text className="mt-1 text-red-500 text-xs">
-              {errors.confirmPassword}
-            </Text>
+            <Text className="mt-1 text-red-500 text-xs">{errors.confirmPassword}</Text>
           )}
         </View>
 
@@ -195,22 +168,15 @@ export default function RegisterPage() {
           onPress={handleRegister}
           disabled={isLoading}
         >
-          <Text className="text-center font-semibold text-base text-white">
-            Registrar
-          </Text>
+          <Text className="text-center font-semibold text-base text-white">Registrar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          className="py-2"
-          onPress={() => router.back()}
-          disabled={isLoading}
-        >
+        <TouchableOpacity className="py-2" onPress={() => router.back()} disabled={isLoading}>
           <Text className="text-center text-muted">
-            Já tem uma conta?{" "}
-            <Text className="font-semibold text-primary">Fazer login</Text>
+            Já tem uma conta? <Text className="font-semibold text-primary">Fazer login</Text>
           </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
-  )
+  );
 }

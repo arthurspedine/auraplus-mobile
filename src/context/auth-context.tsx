@@ -14,7 +14,7 @@ interface JwtPayload {
 
 interface AuthContextType {
   token: string | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   isLoading: boolean;
 }
@@ -56,15 +56,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       const response = await request<{ token: string } | null>("/login", "post", {
         username: email,
         password,
       });
       if (!response) {
-        console.error("Login failed: No response from server");
-        return false;
+        return { success: false, error: "Erro ao conectar com o servidor" };
       }
 
       const receivedToken = response.token;
@@ -75,12 +77,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setToken(receivedToken);
         const decodedToken = jwtDecode<JwtPayload>(receivedToken);
         console.log(decodedToken);
-        return true;
+        return { success: true };
       }
-      return false;
-    } catch (error) {
+      return { success: false, error: "Token inválido recebido" };
+    } catch (error: any) {
       console.error("Login error:", error);
-      return false;
+      const errorMessage =
+        error?.response?.data?.message || error?.message || "Email ou senha incorretos";
+      return { success: false, error: errorMessage };
     }
   };
 

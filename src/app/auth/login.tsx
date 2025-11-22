@@ -1,69 +1,62 @@
-import { useAuth } from "@/context/auth-context"
-import { router } from "expo-router"
-import { useState } from "react"
-import {
-  Image,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native"
+import { useAuth } from "@/context/auth-context";
+import { router } from "expo-router";
+import { useState } from "react";
+import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function LoginPage() {
-  const { login } = useAuth()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {}
-  )
-  const [isLoading, setIsLoading] = useState(false)
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleLogin = async () => {
-    const newErrors: { email?: string; password?: string } = {}
+    const newErrors: { email?: string; password?: string } = {};
 
     if (!email.trim()) {
-      newErrors.email = "Email é obrigatório"
+      newErrors.email = "Email é obrigatório";
     } else if (!validateEmail(email)) {
-      newErrors.email = "Email inválido"
+      newErrors.email = "Email inválido";
     }
 
     if (!password.trim()) {
-      newErrors.password = "Senha é obrigatória"
+      newErrors.password = "Senha é obrigatória";
     }
 
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
+      setErrors(newErrors);
+      return;
     }
 
-    setErrors({})
+    setErrors({});
 
-    setIsLoading(true)
-    const success = await login(email, password)
-    if (success) {
-      setEmail("")
-      setPassword("")
-      router.push("/home")
+    setIsLoading(true);
+    const result = await login(email, password);
+    setIsLoading(false);
+
+    if (result.success) {
+      setEmail("");
+      setPassword("");
+      router.push("/home");
+    } else {
+      Alert.alert(
+        "Erro ao fazer login",
+        result.error || "Ocorreu um erro inesperado. Tente novamente."
+      );
     }
-    setIsLoading(false)
-  }
+  };
 
   return (
     <ScrollView className="flex-1 bg-background">
       <View className="flex-1 px-6 pt-20">
         <View className="mb-12 flex-row items-center justify-between">
           <Text className="font-extrabold text-3xl text-text">Login</Text>
-          <Image
-            source={require("@/assets/icon.png")}
-            className="h-12 w-12"
-            resizeMode="contain"
-          />
+          <Image source={require("@/assets/icon.png")} className="h-12 w-12" resizeMode="contain" />
         </View>
 
         <View className="mb-4">
@@ -73,16 +66,14 @@ export default function LoginPage() {
             placeholder="Digite seu email"
             placeholderTextColor="#999"
             value={email}
-            onChangeText={text => {
-              setEmail(text)
-              if (errors.email) setErrors({ ...errors, email: undefined })
+            onChangeText={(text) => {
+              setEmail(text);
+              if (errors.email) setErrors({ ...errors, email: undefined });
             }}
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          {errors.email && (
-            <Text className="mt-1 text-red-500 text-xs">{errors.email}</Text>
-          )}
+          {errors.email && <Text className="mt-1 text-red-500 text-xs">{errors.email}</Text>}
         </View>
 
         <View className="mb-6">
@@ -92,16 +83,14 @@ export default function LoginPage() {
             placeholder="Digite sua senha"
             placeholderTextColor="#999"
             value={password}
-            onChangeText={text => {
-              setPassword(text)
-              if (errors.password) setErrors({ ...errors, password: undefined })
+            onChangeText={(text) => {
+              setPassword(text);
+              if (errors.password) setErrors({ ...errors, password: undefined });
             }}
             secureTextEntry
             autoCapitalize="none"
           />
-          {errors.password && (
-            <Text className="mt-1 text-red-500 text-xs">{errors.password}</Text>
-          )}
+          {errors.password && <Text className="mt-1 text-red-500 text-xs">{errors.password}</Text>}
         </View>
 
         <TouchableOpacity
@@ -109,9 +98,7 @@ export default function LoginPage() {
           onPress={handleLogin}
           disabled={isLoading}
         >
-          <Text className="text-center font-semibold text-base text-white">
-            Entrar
-          </Text>
+          <Text className="text-center font-semibold text-base text-white">Entrar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -120,11 +107,10 @@ export default function LoginPage() {
           disabled={isLoading}
         >
           <Text className="text-center text-muted">
-            Não tem uma conta?{" "}
-            <Text className="font-semibold text-primary">Criar conta</Text>
+            Não tem uma conta? <Text className="font-semibold text-primary">Criar conta</Text>
           </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
-  )
+  );
 }
