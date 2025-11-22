@@ -36,10 +36,18 @@ interface PageableResponse {
   size: number;
 }
 
+interface EquipeResponse {
+  nomeTime: string;
+  descricao: string;
+  usuarios: PageableResponse;
+}
+
 export default function EquipePage() {
   const { token } = useAuth();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [usuarios, setUsuarios] = useState<UsuarioEquipe[]>([]);
+  const [nomeEquipe, setNomeEquipe] = useState<string | null>(null);
+  const [descricaoEquipe, setDescricaoEquipe] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -78,15 +86,20 @@ export default function EquipePage() {
 
       // Só busca membros da equipe se o usuário tiver equipe
       if ((usuarioResponse as Usuario).equipeId !== null) {
-        const usuariosResponse = await request(
+        const equipeResponse = await request(
           `/equipe/usuarios?page=${page}&size=${pageSize}&sort=nome,asc`,
           "get",
           null,
           { authToken: token }
         );
 
-        const pageableData = usuariosResponse as PageableResponse;
+        const equipeData = equipeResponse as EquipeResponse;
+        const pageableData = equipeData.usuarios;
         const usuarioLogado = usuarioResponse as Usuario;
+
+        // Atualiza nome e descrição da equipe
+        setNomeEquipe(equipeData.nomeTime);
+        setDescricaoEquipe(equipeData.descricao);
 
         // Reorganiza para colocar o usuário logado no topo
         let usuariosOrdenados = [...pageableData.content];
@@ -281,9 +294,9 @@ export default function EquipePage() {
         {/* Header */}
         <View className="mb-6">
           <Text className="font-extrabold text-3xl text-text">Minha Equipe</Text>
-          {usuario?.equipeNome && (
+          {nomeEquipe && (
             <Text className="mt-2 text-base text-muted">
-              {usuario.equipeNome} • {totalElements} {totalElements === 1 ? "membro" : "membros"}
+              {nomeEquipe} • {totalElements} {totalElements === 1 ? "membro" : "membros"}
             </Text>
           )}
         </View>
@@ -291,16 +304,15 @@ export default function EquipePage() {
         {usuario?.equipeId ? (
           <>
             {/* Card de Informações da Equipe */}
-            {usuario.equipeNome && (
+            {nomeEquipe && (
               <View className="mb-6 overflow-hidden rounded-3xl bg-card p-6">
                 <View className="mb-4 flex-row items-center gap-2">
                   <Ionicons name="people" size={24} color="#1F89DA" />
-                  <Text className="flex-1 font-bold text-xl text-text">{usuario.equipeNome}</Text>
+                  <Text className="flex-1 font-bold text-xl text-text">{nomeEquipe}</Text>
                 </View>
 
-                {/* Mock temporário da descrição até a API retornar */}
                 <Text className="leading-6 text-sm text-muted">
-                  {usuario.equipeDescricao ||
+                  {descricaoEquipe ||
                     "Trabalhando juntos para alcançar nossos objetivos e criar um ambiente colaborativo."}
                 </Text>
               </View>
