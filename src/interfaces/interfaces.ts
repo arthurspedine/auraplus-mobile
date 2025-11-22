@@ -7,5 +7,5 @@ export interface Usuario {
   cargo: string | null;
   equipeId: number | null;
   equipeNome: string | null;
-  equipeDescricao?: string | null; // Ainda não vem da API
+  equipeDescricao?: string | null;
 }
