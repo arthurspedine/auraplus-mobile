@@ -4,6 +4,7 @@ import type { Usuario } from "@/interfaces/interfaces";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -19,6 +20,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function PerfilScreen() {
   const { token } = useAuth();
+  const { t } = useTranslation();
   const [usuario, setUsuario] = useState<Usuario>();
   const [erro, setErro] = useState("");
   const [refreshing, setRefreshing] = useState(false);
@@ -29,13 +31,7 @@ export default function PerfilScreen() {
   const router = useRouter();
 
   const getRoleName = (role: string) => {
-    const roles: { [key: string]: string } = {
-      NOVO_USUARIO: "Novo Usuário",
-      ADMIN: "Administrador",
-      COLABORADOR: "Colaborador",
-      GESTOR: "Gestor",
-    };
-    return roles[role] || role;
+    return t(`account.roles.${role}`, { defaultValue: role });
   };
 
   const fetchData = async () => {
@@ -49,7 +45,7 @@ export default function PerfilScreen() {
       setUsuario(response as Usuario);
       setErro("");
     } catch (error) {
-      setErro("Erro ao carregar dados do usuário");
+      setErro(t("account.errorLoading"));
     }
   };
 
@@ -70,17 +66,17 @@ export default function PerfilScreen() {
   const submitPasswordChange = async () => {
     if (!usuario || !token) return;
     if (!newPassword.trim()) {
-      Alert.alert("Erro", "A senha não pode estar vazia");
+      Alert.alert(t("account.passwordModal.errorTitle"), t("account.passwordModal.errorEmpty"));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert("Erro", "As senhas não coincidem");
+      Alert.alert(t("account.passwordModal.errorTitle"), t("account.passwordModal.errorMismatch"));
       return;
     }
 
     if (newPassword.length < 6) {
-      Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
+      Alert.alert(t("account.passwordModal.errorTitle"), t("account.passwordModal.errorLength"));
       return;
     }
 
@@ -94,12 +90,15 @@ export default function PerfilScreen() {
       await request("/usuario/me", "put", updatedUsuario, {
         authToken: token,
       });
-      Alert.alert("Sucesso", "Senha alterada com sucesso");
+      Alert.alert(
+        t("account.passwordModal.successTitle"),
+        t("account.passwordModal.successMessage")
+      );
       setModalVisible(false);
       setNewPassword("");
       setConfirmPassword("");
     } catch (error) {
-      Alert.alert("Erro ao alterar senha");
+      Alert.alert(t("account.passwordModal.errorMessage"));
     } finally {
       setIsLoading(false);
     }
@@ -128,8 +127,8 @@ export default function PerfilScreen() {
         {/* Header */}
         <View className="mb-8 flex-row items-center justify-between pt-4">
           <View className="flex-1">
-            <Text className="font-extrabold text-3xl text-text">Perfil</Text>
-            <Text className="mt-1 text-sm text-muted">{usuario?.nome || "Carregando..."}</Text>
+            <Text className="font-extrabold text-3xl text-text">{t("account.title")}</Text>
+            <Text className="mt-1 text-sm text-muted">{usuario?.nome || t("account.loading")}</Text>
           </View>
           <TouchableOpacity onPress={() => router.back()} className="rounded-full bg-card p-3">
             <Ionicons name="arrow-back" size={24} color="#1F89DA" />
@@ -164,7 +163,7 @@ export default function PerfilScreen() {
                   <View className="flex-row items-center gap-3 rounded-lg bg-card/50 p-3">
                     <Ionicons name="briefcase-outline" size={18} color="#1F89DA" />
                     <Text className="flex-1 text-sm text-text">
-                      {usuario.cargo || "Sem cargo cadastrado"}
+                      {usuario.cargo || t("account.noCargo")}
                     </Text>
                   </View>
 
@@ -175,7 +174,7 @@ export default function PerfilScreen() {
                   >
                     <Ionicons name="people-outline" size={18} color="#1F89DA" />
                     <Text className="flex-1 text-sm text-text">
-                      {usuario.equipeNome || "Sem equipe atribuída"}
+                      {usuario.equipeNome || t("account.noTeam")}
                     </Text>
                     {usuario.equipeNome && (
                       <Ionicons name="chevron-forward" size={16} color="#1F89DA" />
@@ -187,7 +186,7 @@ export default function PerfilScreen() {
 
             {/* Ações Rápidas */}
             <View className="rounded-2xl bg-card p-5">
-              <Text className="mb-4 font-bold text-base text-text">Configurações</Text>
+              <Text className="mb-4 font-bold text-base text-text">{t("account.settings")}</Text>
 
               <TouchableOpacity
                 className="flex-row items-center justify-between rounded-lg border border-muted/20 bg-secondary p-4"
@@ -198,8 +197,8 @@ export default function PerfilScreen() {
                     <Ionicons name="key-outline" size={20} color="#1F89DA" />
                   </View>
                   <View>
-                    <Text className="font-medium text-text">Alterar Senha</Text>
-                    <Text className="text-muted text-xs">Atualize sua senha de acesso</Text>
+                    <Text className="font-medium text-text">{t("account.changePassword")}</Text>
+                    <Text className="text-muted text-xs">{t("account.changePasswordDesc")}</Text>
                   </View>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#1F89DA" />
@@ -209,7 +208,7 @@ export default function PerfilScreen() {
         ) : (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator size="large" color="#1F89DA" />
-            <Text className="mt-4 text-muted">Carregando perfil...</Text>
+            <Text className="mt-4 text-muted">{t("account.loading")}</Text>
           </View>
         )}
         {erro && (
@@ -234,7 +233,9 @@ export default function PerfilScreen() {
                 <View className="h-10 w-10 items-center justify-center rounded-full bg-primary/20">
                   <Ionicons name="key" size={20} color="#1F89DA" />
                 </View>
-                <Text className="font-bold text-xl text-text">Alterar Senha</Text>
+                <Text className="font-bold text-xl text-text">
+                  {t("account.passwordModal.title")}
+                </Text>
               </View>
               <TouchableOpacity onPress={closeModal} className="rounded-full bg-secondary p-2">
                 <Ionicons name="close" size={20} color="#fff" />
@@ -243,12 +244,14 @@ export default function PerfilScreen() {
 
             <View className="gap-4">
               <View>
-                <Text className="mb-2 font-medium text-sm text-text">Nova Senha</Text>
+                <Text className="mb-2 font-medium text-sm text-text">
+                  {t("account.passwordModal.newPassword")}
+                </Text>
                 <View className="flex-row items-center rounded-lg border border-muted/30 bg-secondary px-4">
                   <Ionicons name="lock-closed" size={18} color="#1F89DA" />
                   <TextInput
                     className="flex-1 py-3 pl-3 text-base text-text"
-                    placeholder="Digite a nova senha"
+                    placeholder={t("account.passwordModal.newPasswordPlaceholder")}
                     value={newPassword}
                     onChangeText={setNewPassword}
                     secureTextEntry
@@ -258,12 +261,14 @@ export default function PerfilScreen() {
               </View>
 
               <View>
-                <Text className="mb-2 font-medium text-sm text-text">Confirmar Senha</Text>
+                <Text className="mb-2 font-medium text-sm text-text">
+                  {t("account.passwordModal.confirmPassword")}
+                </Text>
                 <View className="flex-row items-center rounded-lg border border-muted/30 bg-secondary px-4">
                   <Ionicons name="lock-closed" size={18} color="#1F89DA" />
                   <TextInput
                     className="flex-1 py-3 pl-3 text-base text-text"
-                    placeholder="Confirme a nova senha"
+                    placeholder={t("account.passwordModal.confirmPasswordPlaceholder")}
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                     secureTextEntry
@@ -277,7 +282,9 @@ export default function PerfilScreen() {
                   className="h-12 flex-1 items-center justify-center rounded-lg border border-muted/30 bg-background"
                   onPress={closeModal}
                 >
-                  <Text className="font-medium text-base text-muted">Cancelar</Text>
+                  <Text className="font-medium text-base text-muted">
+                    {t("account.passwordModal.cancel")}
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -288,7 +295,9 @@ export default function PerfilScreen() {
                   {isLoading ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
-                    <Text className="font-semibold text-base text-white">Confirmar</Text>
+                    <Text className="font-semibold text-base text-white">
+                      {t("account.passwordModal.save")}
+                    </Text>
                   )}
                 </TouchableOpacity>
               </View>

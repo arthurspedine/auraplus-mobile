@@ -3,6 +3,7 @@ import type { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { LanguageToggle } from "@/components/language-toggle";
 import { Alert, Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
 
@@ -11,15 +12,16 @@ type RootDrawerParamList = {
 };
 
 export function Header() {
+  const { t } = useTranslation();
   const router = useRouter();
   const navigation = useNavigation<DrawerNavigationProp<RootDrawerParamList>>();
   const [sheetVisible, setSheetVisible] = useState(false);
 
   const handleLogout = async () => {
-    Alert.alert("Sair", "Tem certeza que deseja sair?", [
-      { text: "Cancelar", style: "cancel" },
+    Alert.alert(t("navigation.logoutConfirmTitle"), t("navigation.logoutConfirmMessage"), [
+      { text: t("navigation.cancel"), style: "cancel" },
       {
-        text: "Sair",
+        text: t("navigation.logout"),
         style: "destructive",
         onPress: async () => {
           setSheetVisible(false);
@@ -74,7 +76,7 @@ export function Header() {
                 color="#1F89DA"
                 style={{ marginRight: 8 }}
               />
-              <Text className="font-semibold text-lg text-primary">Conta</Text>
+              <Text className="font-semibold text-lg text-primary">{t("navigation.account")}</Text>
             </Pressable>
             <Pressable
               className="w-full flex-row items-center justify-center py-4"
@@ -86,7 +88,7 @@ export function Header() {
                 color="#dc2626"
                 style={{ marginRight: 8 }}
               />
-              <Text className="font-semibold text-lg text-red-600">Sair</Text>
+              <Text className="font-semibold text-lg text-red-600">{t("navigation.logout")}</Text>
             </Pressable>
           </View>
         </Pressable>

@@ -1,9 +1,11 @@
 import { request } from "@/helper/request";
 import { router } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function RegisterPage() {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,25 +32,25 @@ export default function RegisterPage() {
     } = {};
 
     if (!name.trim()) {
-      newErrors.name = "Nome é obrigatório";
+      newErrors.name = t("auth.register.errorNameRequired");
     }
 
     if (!email.trim()) {
-      newErrors.email = "Email é obrigatório";
+      newErrors.email = t("auth.register.errorEmailRequired");
     } else if (!validateEmail(email)) {
-      newErrors.email = "Email inválido";
+      newErrors.email = t("auth.register.errorEmailInvalid");
     }
 
     if (!password.trim()) {
-      newErrors.password = "Senha é obrigatória";
+      newErrors.password = t("auth.register.errorPasswordRequired");
     } else if (password.length < 6) {
-      newErrors.password = "Senha deve ter pelo menos 6 caracteres";
+      newErrors.password = t("auth.register.errorPasswordLength");
     }
 
     if (!confirmPassword.trim()) {
-      newErrors.confirmPassword = "Confirmação de senha é obrigatória";
+      newErrors.confirmPassword = t("auth.register.errorConfirmRequired");
     } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = "As senhas não coincidem";
+      newErrors.confirmPassword = t("auth.register.errorPasswordMismatch");
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -68,7 +70,7 @@ export default function RegisterPage() {
       console.log("Registrando");
 
       await request("/usuario", "post", registerData);
-      Alert.alert("Sucesso", "Registro bem-sucedido! Você já pode fazer login com sua nova conta.");
+      Alert.alert(t("auth.register.successTitle"), t("auth.register.successMessage"));
       setEmail("");
       setName("");
       setPassword("");
@@ -77,10 +79,8 @@ export default function RegisterPage() {
     } catch (error: any) {
       console.error("Erro ao registrar:", error);
       const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Ocorreu um erro ao registrar. Tente novamente.";
-      Alert.alert("Erro no cadastro", errorMessage);
+        error?.response?.data?.message || error?.message || t("auth.register.errorDefault");
+      Alert.alert(t("auth.register.errorTitle"), errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -90,15 +90,15 @@ export default function RegisterPage() {
     <ScrollView className="flex-1 bg-background">
       <View className="flex-1 px-6 pt-20">
         <View className="mb-12 flex-row items-center justify-between">
-          <Text className="font-extrabold text-3xl text-text">Criar Conta</Text>
+          <Text className="font-extrabold text-3xl text-text">{t("auth.register.title")}</Text>
           <Image source={require("@/assets/icon.png")} className="h-12 w-12" resizeMode="contain" />
         </View>
 
         <View className="mb-4">
-          <Text className="mb-2 font-medium text-sm text-text">Nome</Text>
+          <Text className="mb-2 font-medium text-sm text-text">{t("auth.register.name")}</Text>
           <TextInput
             className="rounded-lg border border-muted/30 bg-card px-4 py-3 text-text"
-            placeholder="Digite seu nome"
+            placeholder={t("auth.register.namePlaceholder")}
             placeholderTextColor="#999"
             value={name}
             onChangeText={(text) => {
@@ -111,10 +111,10 @@ export default function RegisterPage() {
         </View>
 
         <View className="mb-4">
-          <Text className="mb-2 font-medium text-sm text-text">Email</Text>
+          <Text className="mb-2 font-medium text-sm text-text">{t("auth.register.email")}</Text>
           <TextInput
             className="rounded-lg border border-muted/30 bg-card px-4 py-3 text-text"
-            placeholder="Digite seu email"
+            placeholder={t("auth.register.emailPlaceholder")}
             placeholderTextColor="#999"
             value={email}
             onChangeText={(text) => {
@@ -128,10 +128,10 @@ export default function RegisterPage() {
         </View>
 
         <View className="mb-4">
-          <Text className="mb-2 font-medium text-sm text-text">Senha</Text>
+          <Text className="mb-2 font-medium text-sm text-text">{t("auth.register.password")}</Text>
           <TextInput
             className="rounded-lg border border-muted/30 bg-card px-4 py-3 text-text"
-            placeholder="Digite sua senha"
+            placeholder={t("auth.register.passwordPlaceholder")}
             placeholderTextColor="#999"
             value={password}
             onChangeText={(text) => {
@@ -145,10 +145,12 @@ export default function RegisterPage() {
         </View>
 
         <View className="mb-6">
-          <Text className="mb-2 font-medium text-sm text-text">Confirmar Senha</Text>
+          <Text className="mb-2 font-medium text-sm text-text">
+            {t("auth.register.confirmPassword")}
+          </Text>
           <TextInput
             className="rounded-lg border border-muted/30 bg-card px-4 py-3 text-text"
-            placeholder="Confirme sua senha"
+            placeholder={t("auth.register.confirmPasswordPlaceholder")}
             placeholderTextColor="#999"
             value={confirmPassword}
             onChangeText={(text) => {
@@ -168,12 +170,15 @@ export default function RegisterPage() {
           onPress={handleRegister}
           disabled={isLoading}
         >
-          <Text className="text-center font-semibold text-base text-white">Registrar</Text>
+          <Text className="text-center font-semibold text-base text-white">
+            {t("auth.register.registerButton")}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity className="py-2" onPress={() => router.back()} disabled={isLoading}>
           <Text className="text-center text-muted">
-            Já tem uma conta? <Text className="font-semibold text-primary">Fazer login</Text>
+            {t("auth.register.haveAccount")}{" "}
+            <Text className="font-semibold text-primary">{t("auth.register.login")}</Text>
           </Text>
         </TouchableOpacity>
       </View>

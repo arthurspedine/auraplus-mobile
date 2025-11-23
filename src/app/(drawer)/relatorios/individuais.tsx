@@ -2,6 +2,7 @@ import { request } from "@/helper/request";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -21,6 +22,7 @@ interface RelatorioIndividual {
 }
 
 export default function RelatoriosIndividuaisScreen() {
+  const { t } = useTranslation();
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [relatorio, setRelatorio] = useState<RelatorioIndividual | null>(null);
@@ -31,20 +33,21 @@ export default function RelatoriosIndividuaisScreen() {
   const [mesSelecionado, setMesSelecionado] = useState(currentMonth + 1);
 
   const anos = [currentYear - 2, currentYear - 1, currentYear];
-  const meses = [
-    { numero: 1, nome: "Janeiro" },
-    { numero: 2, nome: "Fevereiro" },
-    { numero: 3, nome: "Março" },
-    { numero: 4, nome: "Abril" },
-    { numero: 5, nome: "Maio" },
-    { numero: 6, nome: "Junho" },
-    { numero: 7, nome: "Julho" },
-    { numero: 8, nome: "Agosto" },
-    { numero: 9, nome: "Setembro" },
-    { numero: 10, nome: "Outubro" },
-    { numero: 11, nome: "Novembro" },
-    { numero: 12, nome: "Dezembro" },
+  const getMeses = () => [
+    { numero: 1, nome: t("reports.months.1") },
+    { numero: 2, nome: t("reports.months.2") },
+    { numero: 3, nome: t("reports.months.3") },
+    { numero: 4, nome: t("reports.months.4") },
+    { numero: 5, nome: t("reports.months.5") },
+    { numero: 6, nome: t("reports.months.6") },
+    { numero: 7, nome: t("reports.months.7") },
+    { numero: 8, nome: t("reports.months.8") },
+    { numero: 9, nome: t("reports.months.9") },
+    { numero: 10, nome: t("reports.months.10") },
+    { numero: 11, nome: t("reports.months.11") },
+    { numero: 12, nome: t("reports.months.12") },
   ];
+  const meses = getMeses();
 
   const carregarRelatorio = async (isRefresh = false) => {
     if (isRefresh) {
@@ -97,19 +100,25 @@ export default function RelatoriosIndividuaisScreen() {
         }
       >
         <View className="pt-4">
-          <Text className="mb-2 font-extrabold text-3xl text-text">Relatórios Individuais</Text>
-          <Text className="mb-6 text-base text-muted">Acompanhe suas estatísticas pessoais</Text>
+          <Text className="mb-2 font-extrabold text-3xl text-text">
+            {t("reports.individual.title")}
+          </Text>
+          <Text className="mb-6 text-base text-muted">{t("reports.individual.subtitle")}</Text>
 
           {/* Filtros */}
           <View className="mb-4">
             <View className="mb-3 flex-row items-center gap-2">
               <Ionicons name="filter" size={18} color="#1F89DA" />
-              <Text className="font-semibold text-sm text-text">Filtros</Text>
+              <Text className="font-semibold text-sm text-text">
+                {t("reports.individual.filters")}
+              </Text>
             </View>
 
             {/* Filtro de Ano */}
             <View className="mb-3">
-              <Text className="mb-2 font-medium text-xs text-muted">Ano</Text>
+              <Text className="mb-2 font-medium text-xs text-muted">
+                {t("reports.individual.year")}
+              </Text>
               <View className="flex-row gap-2">
                 {anos.map((ano) => (
                   <TouchableOpacity
@@ -136,7 +145,9 @@ export default function RelatoriosIndividuaisScreen() {
 
             {/* Filtro de Mês */}
             <View>
-              <Text className="mb-2 font-medium text-xs text-muted">Mês</Text>
+              <Text className="mb-2 font-medium text-xs text-muted">
+                {t("reports.individual.month")}
+              </Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -167,12 +178,14 @@ export default function RelatoriosIndividuaisScreen() {
             </View>
           </View>
 
-          {/* Período Selecionado */}
           <View className="mb-4 rounded-xl bg-primary/10 px-4 py-2">
             <View className="flex-row items-center justify-center gap-2">
               <Ionicons name="calendar" size={16} color="#1F89DA" />
               <Text className="font-semibold text-sm text-primary">
-                {meses.find((m) => m.numero === mesSelecionado)?.nome} de {anoSelecionado}
+                {t("reports.individual.selectedPeriod", {
+                  month: meses.find((m) => m.numero === mesSelecionado)?.nome,
+                  year: anoSelecionado,
+                })}
               </Text>
             </View>
           </View>
@@ -184,11 +197,12 @@ export default function RelatoriosIndividuaisScreen() {
             </View>
           ) : relatorio ? (
             <View className="gap-4 pb-6">
-              {/* Card de Estatísticas */}
               <View className="overflow-hidden rounded-3xl bg-card p-6">
                 <View className="mb-4 flex-row items-center gap-2">
                   <Ionicons name="stats-chart" size={24} color="#1F89DA" />
-                  <Text className="font-bold text-xl text-text">Estatísticas</Text>
+                  <Text className="font-bold text-xl text-text">
+                    {t("reports.individual.statistics")}
+                  </Text>
                 </View>
 
                 {/* Nome do Usuário */}
@@ -208,19 +222,22 @@ export default function RelatoriosIndividuaisScreen() {
                     {relatorio.numeroIndicacoes}
                   </Text>
                   <Text className="text-center font-medium text-sm text-muted">
-                    {relatorio.numeroIndicacoes === 1
-                      ? "Reconhecimento recebido"
-                      : "Reconhecimentos recebidos"}
+                    {t(
+                      relatorio.numeroIndicacoes === 1
+                        ? "reports.individual.recognition"
+                        : "reports.individual.recognitions"
+                    )}
                   </Text>
                 </View>
               </View>
 
-              {/* Card de Resumo Gerado por IA */}
               {relatorio.descritivo && (
                 <View className="overflow-hidden rounded-3xl bg-card p-6">
                   <View className="mb-4 flex-row items-center gap-2">
                     <Ionicons name="sparkles" size={24} color="#1F89DA" />
-                    <Text className="font-bold text-xl text-text">Resumo do Período</Text>
+                    <Text className="font-bold text-xl text-text">
+                      {t("reports.individual.periodSummary")}
+                    </Text>
                   </View>
 
                   <View className="rounded-xl bg-primary/5 p-4">
@@ -229,7 +246,9 @@ export default function RelatoriosIndividuaisScreen() {
 
                   <View className="mt-3 flex-row items-center gap-2">
                     <Ionicons name="information-circle" size={16} color="#666" />
-                    <Text className="text-muted text-xs">Resumo gerado por IA</Text>
+                    <Text className="text-muted text-xs">
+                      {t("reports.individual.aiGenerated")}
+                    </Text>
                   </View>
                 </View>
               )}
@@ -238,10 +257,10 @@ export default function RelatoriosIndividuaisScreen() {
             <View className="flex-1 items-center justify-center py-20">
               <Ionicons name="document-text-outline" size={64} color="#1F89DA" />
               <Text className="mt-4 text-center text-base text-text">
-                Nenhum relatório disponível
+                {t("reports.individual.noReportTitle")}
               </Text>
               <Text className="mt-2 text-center text-sm text-muted">
-                Não há dados para o período selecionado.
+                {t("reports.individual.noReportMessage")}
               </Text>
             </View>
           )}

@@ -1,10 +1,12 @@
 import { useAuth } from "@/context/auth-context";
 import { router } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
@@ -19,13 +21,13 @@ export default function LoginPage() {
     const newErrors: { email?: string; password?: string } = {};
 
     if (!email.trim()) {
-      newErrors.email = "Email é obrigatório";
+      newErrors.email = t("auth.login.errorEmailRequired");
     } else if (!validateEmail(email)) {
-      newErrors.email = "Email inválido";
+      newErrors.email = t("auth.login.errorEmailInvalid");
     }
 
     if (!password.trim()) {
-      newErrors.password = "Senha é obrigatória";
+      newErrors.password = t("auth.login.errorPasswordRequired");
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -44,10 +46,7 @@ export default function LoginPage() {
       setPassword("");
       router.push("/home");
     } else {
-      Alert.alert(
-        "Erro ao fazer login",
-        result.error || "Ocorreu um erro inesperado. Tente novamente."
-      );
+      Alert.alert(t("auth.login.errorTitle"), result.error || t("auth.login.errorDefault"));
     }
   };
 
@@ -55,15 +54,15 @@ export default function LoginPage() {
     <ScrollView className="flex-1 bg-background">
       <View className="flex-1 px-6 pt-20">
         <View className="mb-12 flex-row items-center justify-between">
-          <Text className="font-extrabold text-3xl text-text">Login</Text>
+          <Text className="font-extrabold text-3xl text-text">{t("auth.login.title")}</Text>
           <Image source={require("@/assets/icon.png")} className="h-12 w-12" resizeMode="contain" />
         </View>
 
         <View className="mb-4">
-          <Text className="mb-2 font-medium text-sm text-text">Email</Text>
+          <Text className="mb-2 font-medium text-sm text-text">{t("auth.login.email")}</Text>
           <TextInput
             className="rounded-lg border border-muted/30 bg-card px-4 py-3 text-text"
-            placeholder="Digite seu email"
+            placeholder={t("auth.login.emailPlaceholder")}
             placeholderTextColor="#999"
             value={email}
             onChangeText={(text) => {
@@ -77,10 +76,10 @@ export default function LoginPage() {
         </View>
 
         <View className="mb-6">
-          <Text className="mb-2 font-medium text-sm text-text">Senha</Text>
+          <Text className="mb-2 font-medium text-sm text-text">{t("auth.login.password")}</Text>
           <TextInput
             className="rounded-lg border border-muted/30 bg-card px-4 py-3 text-text"
-            placeholder="Digite sua senha"
+            placeholder={t("auth.login.passwordPlaceholder")}
             placeholderTextColor="#999"
             value={password}
             onChangeText={(text) => {
@@ -98,7 +97,9 @@ export default function LoginPage() {
           onPress={handleLogin}
           disabled={isLoading}
         >
-          <Text className="text-center font-semibold text-base text-white">Entrar</Text>
+          <Text className="text-center font-semibold text-base text-white">
+            {t("auth.login.loginButton")}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -107,7 +108,8 @@ export default function LoginPage() {
           disabled={isLoading}
         >
           <Text className="text-center text-muted">
-            Não tem uma conta? <Text className="font-semibold text-primary">Criar conta</Text>
+            {t("auth.login.noAccount")}{" "}
+            <Text className="font-semibold text-primary">{t("auth.login.createAccount")}</Text>
           </Text>
         </TouchableOpacity>
       </View>

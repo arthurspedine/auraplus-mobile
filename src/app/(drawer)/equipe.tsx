@@ -3,6 +3,7 @@ import { request } from "@/helper/request";
 import type { Usuario } from "@/interfaces/interfaces";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -49,6 +50,7 @@ interface NovoMembro {
 
 export default function EquipePage() {
   const { token, refreshUsuario } = useAuth();
+  const { t } = useTranslation();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [usuarios, setUsuarios] = useState<UsuarioEquipe[]>([]);
   const [nomeEquipe, setNomeEquipe] = useState<string | null>(null);
@@ -216,12 +218,18 @@ export default function EquipePage() {
     if (!token) return;
 
     if (!nomeNovaEquipe.trim()) {
-      Alert.alert("Erro", "O nome da equipe é obrigatório.");
+      Alert.alert(
+        t("team.createTeamModal.errorTitle"),
+        t("team.createTeamModal.errorNameRequired")
+      );
       return;
     }
 
     if (!cargoCriador.trim()) {
-      Alert.alert("Erro", "Seu cargo é obrigatório.");
+      Alert.alert(
+        t("team.createTeamModal.errorTitle"),
+        t("team.createTeamModal.errorRoleRequired")
+      );
       return;
     }
 
@@ -238,27 +246,25 @@ export default function EquipePage() {
         { authToken: token }
       );
 
-      Alert.alert("Sucesso! 🎉", "Equipe criada com sucesso!");
+      Alert.alert(t("team.createTeamModal.successTitle"), t("team.createTeamModal.successMessage"));
       handleFecharModalCriarEquipe();
       await refreshUsuario(); // Atualiza dados do usuário no contexto
       fetchData(0, true);
     } catch (error: any) {
       console.error("Erro ao criar equipe:", error);
       const mensagemErro =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Não foi possível criar a equipe. Tente novamente.";
-      Alert.alert("Erro", mensagemErro);
+        error?.response?.data?.message || error?.message || t("team.createTeamModal.errorMessage");
+      Alert.alert(t("team.createTeamModal.errorTitle"), mensagemErro);
     } finally {
       setCriandoEquipe(false);
     }
   };
 
   const handleRemoverMembro = async (idUser: number, nome: string) => {
-    Alert.alert("Remover membro", `Tem certeza que deseja remover ${nome} da equipe?`, [
-      { text: "Cancelar", style: "cancel" },
+    Alert.alert(t("team.removeModal.title"), t("team.removeModal.message", { name: nome }), [
+      { text: t("team.removeModal.cancel"), style: "cancel" },
       {
-        text: "Remover",
+        text: t("team.removeModal.confirm"),
         style: "destructive",
         onPress: async () => {
           if (!token) return;
@@ -266,15 +272,18 @@ export default function EquipePage() {
           try {
             await request(`/equipe/usuarios/${idUser}`, "delete", null, { authToken: token });
 
-            Alert.alert("Sucesso", `${nome} foi removido(a) da equipe.`);
+            Alert.alert(
+              t("team.removeModal.successTitle"),
+              t("team.removeModal.successMessage", { name: nome })
+            );
             fetchData(0, true);
           } catch (error: any) {
             console.error("Erro ao remover membro:", error);
             const mensagemErro =
               error?.response?.data?.message ||
               error?.message ||
-              "Não foi possível remover o membro. Tente novamente.";
-            Alert.alert("Erro", mensagemErro);
+              t("team.removeModal.errorMessage");
+            Alert.alert(t("team.removeModal.errorTitle"), mensagemErro);
           }
         },
       },
@@ -284,20 +293,21 @@ export default function EquipePage() {
   const handleAdicionarMembros = async () => {
     if (!token) return;
 
-    // Validação
     const membrosValidos = novosMembros.filter((m) => m.email.trim() && m.cargo.trim());
 
     if (membrosValidos.length === 0) {
-      Alert.alert("Erro", "Preencha pelo menos um membro com email e cargo válidos.");
+      Alert.alert(t("team.addMembersModal.errorTitle"), t("team.addMembersModal.errorRequired"));
       return;
     }
 
-    // Valida emails
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const emailsInvalidos = membrosValidos.filter((m) => !emailRegex.test(m.email));
 
     if (emailsInvalidos.length > 0) {
-      Alert.alert("Erro", "Um ou mais emails são inválidos.");
+      Alert.alert(
+        t("team.addMembersModal.errorTitle"),
+        t("team.addMembersModal.errorInvalidEmail")
+      );
       return;
     }
 
@@ -307,50 +317,46 @@ export default function EquipePage() {
         authToken: token,
       });
 
-      // Coletar todas as mensagens de erro
       const mensagensErro: string[] = [];
 
       if (response?.naoEncontrados && response.naoEncontrados.length > 0) {
         const emails = response.naoEncontrados.join(", ");
-        mensagensErro.push(`❌ Não encontrados: ${emails}`);
+        mensagensErro.push(t("team.addMembersModal.errorNotFound", { emails }));
       }
 
       if (response?.jaEmOutroTime && response.jaEmOutroTime.length > 0) {
         const emails = response.jaEmOutroTime.join(", ");
-        mensagensErro.push(`⚠️ Já em outro time: ${emails}`);
+        mensagensErro.push(t("team.addMembersModal.errorInOtherTeam", { emails }));
       }
 
       if (response?.jaNaEquipe && response.jaNaEquipe.length > 0) {
         const emails = response.jaNaEquipe.join(", ");
-        mensagensErro.push(`ℹ️ Já nesta equipe: ${emails}`);
+        mensagensErro.push(t("team.addMembersModal.errorAlreadyInTeam", { emails }));
       }
 
-      // Se houver erros, mostrar todos de uma vez
       if (mensagensErro.length > 0) {
-        Alert.alert("Atenção", mensagensErro.join("\n\n"));
+        Alert.alert(t("team.addMembersModal.warningTitle"), mensagensErro.join("\n\n"));
         return;
       }
 
-      // Verificar se adicionou com sucesso
       if (response?.adicionados && response.adicionados.length > 0) {
         Alert.alert(
-          "Sucesso! 🎉",
-          `${response.adicionados.length} ${
-            response.adicionados.length === 1 ? "membro adicionado" : "membros adicionados"
-          } com sucesso.`
+          t("team.addMembersModal.successTitle"),
+          t("team.addMembersModal.successMessage", { count: response.adicionados.length })
         );
         handleFecharModalAdd();
-        fetchData(0, true); // Atualiza a lista
+        fetchData(0, true);
       } else {
-        Alert.alert("Aviso", "Nenhum membro foi adicionado.");
+        Alert.alert(
+          t("team.addMembersModal.warningTitle"),
+          t("team.addMembersModal.noMembersAdded")
+        );
       }
     } catch (error: any) {
       console.error("Erro ao adicionar membros:", error);
       const mensagemErro =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Não foi possível adicionar os membros. Tente novamente.";
-      Alert.alert("Erro", mensagemErro);
+        error?.response?.data?.message || error?.message || t("team.addMembersModal.errorMessage");
+      Alert.alert(t("team.addMembersModal.errorTitle"), mensagemErro);
     } finally {
       setAdicionandoMembros(false);
     }
@@ -360,7 +366,7 @@ export default function EquipePage() {
     if (!usuarioSelecionado || !token) return;
 
     if (!titulo.trim()) {
-      Alert.alert("Campo obrigatório", "Por favor, insira um título para o reconhecimento.");
+      Alert.alert(t("team.recognizeModal.errorTitle"), t("team.recognizeModal.errorRequired"));
       return;
     }
 
@@ -379,8 +385,8 @@ export default function EquipePage() {
       );
 
       Alert.alert(
-        "Reconhecimento enviado! 🎉",
-        `Você reconheceu ${usuarioSelecionado.nome} com sucesso.`
+        t("team.recognizeModal.successTitle"),
+        t("team.recognizeModal.successMessage", { name: usuarioSelecionado.nome })
       );
 
       handleFecharModal();
@@ -388,11 +394,9 @@ export default function EquipePage() {
       console.error("Erro ao enviar reconhecimento:", error);
 
       const mensagemErro =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Não foi possível enviar o reconhecimento. Tente novamente.";
+        error?.response?.data?.message || error?.message || t("team.recognizeModal.errorMessage");
 
-      Alert.alert("Erro ao enviar reconhecimento", mensagemErro);
+      Alert.alert(t("team.recognizeModal.errorTitle"), mensagemErro);
     } finally {
       setEnviando(false);
     }
@@ -422,7 +426,7 @@ export default function EquipePage() {
               <Text className="font-semibold text-base text-text">{item.nome}</Text>
               {isUsuarioLogado && (
                 <View className="rounded-full bg-primary/20 px-2 py-1">
-                  <Text className="font-medium text-primary text-xs">(você)</Text>
+                  <Text className="font-medium text-primary text-xs">{t("team.you")}</Text>
                 </View>
               )}
             </View>
@@ -481,7 +485,7 @@ export default function EquipePage() {
   const renderEmpty = () => (
     <View className="items-center py-12">
       <Ionicons name="people-outline" size={64} color="#1F89DA" />
-      <Text className="mt-4 text-center text-base text-text">Nenhum membro na equipe</Text>
+      <Text className="mt-4 text-center text-base text-text">{t("team.noMembers")}</Text>
     </View>
   );
 
@@ -510,10 +514,11 @@ export default function EquipePage() {
       >
         {/* Header */}
         <View className="mb-6">
-          <Text className="font-extrabold text-3xl text-text">Minha Equipe</Text>
+          <Text className="font-extrabold text-3xl text-text">{t("team.title")}</Text>
           {nomeEquipe && (
             <Text className="mt-2 text-base text-muted">
-              {nomeEquipe} • {totalElements} {totalElements === 1 ? "membro" : "membros"}
+              {nomeEquipe} • {totalElements}{" "}
+              {t(totalElements === 1 ? "team.member" : "team.members")}
             </Text>
           )}
         </View>
@@ -529,15 +534,14 @@ export default function EquipePage() {
                 </View>
 
                 <Text className="leading-6 text-sm text-muted">
-                  {descricaoEquipe ||
-                    "Trabalhando juntos para alcançar nossos objetivos e criar um ambiente colaborativo."}
+                  {descricaoEquipe || t("team.defaultDescription")}
                 </Text>
               </View>
             )}
 
             {/* Lista de Membros */}
             <View className="mb-4 flex-row items-center justify-between">
-              <Text className="font-bold text-lg text-text">Membros</Text>
+              <Text className="font-bold text-lg text-text">{t("team.membersTitle")}</Text>
               <View className="flex-row items-center gap-3">
                 {usuario?.role === "ADMIN" && (
                   <TouchableOpacity
@@ -546,12 +550,12 @@ export default function EquipePage() {
                     activeOpacity={0.7}
                   >
                     <Ionicons name="person-add" size={18} color="#fff" />
-                    <Text className="font-semibold text-sm text-white">Adicionar</Text>
+                    <Text className="font-semibold text-sm text-white">{t("team.addMembers")}</Text>
                   </TouchableOpacity>
                 )}
                 {totalPages > 1 && (
                   <Text className="text-sm text-muted">
-                    Página {currentPage + 1} de {totalPages}
+                    {t("team.page", { current: currentPage + 1, total: totalPages })}
                   </Text>
                 )}
               </View>
@@ -573,11 +577,9 @@ export default function EquipePage() {
         ) : (
           <View className="flex-1 items-center justify-center py-20">
             <Ionicons name="people-outline" size={64} color="#1F89DA" />
-            <Text className="mt-4 text-center text-base text-text">
-              Você não faz parte de uma equipe
-            </Text>
+            <Text className="mt-4 text-center text-base text-text">{t("team.noTeamTitle")}</Text>
             <Text className="mt-2 mb-6 text-center text-sm text-muted">
-              Crie sua própria equipe ou entre em contato com seu gestor para ser adicionado.
+              {t("team.noTeamMessage")}
             </Text>
 
             <TouchableOpacity
@@ -586,7 +588,7 @@ export default function EquipePage() {
               activeOpacity={0.7}
             >
               <Ionicons name="add-circle" size={20} color="#fff" />
-              <Text className="font-semibold text-base text-white">Criar Equipe</Text>
+              <Text className="font-semibold text-base text-white">{t("team.createTeam")}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -608,21 +610,24 @@ export default function EquipePage() {
                   <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
                     <Ionicons name="trophy" size={32} color="#22c55e" />
                   </View>
-                  <Text className="font-bold text-2xl text-text">Reconhecer Colega</Text>
+                  <Text className="font-bold text-2xl text-text">
+                    {t("team.recognizeModal.title")}
+                  </Text>
                   {usuarioSelecionado && (
                     <Text className="mt-2 text-center text-sm text-muted">
-                      Envie um reconhecimento para {usuarioSelecionado.nome}
+                      {t("team.recognizeModal.subtitle", { name: usuarioSelecionado.nome })}
                     </Text>
                   )}
                 </View>
 
-                {/* Campos do formulário */}
                 <View className="gap-4">
                   <View>
-                    <Text className="mb-2 font-medium text-sm text-text">Título *</Text>
+                    <Text className="mb-2 font-medium text-sm text-text">
+                      {t("team.recognizeModal.titleLabel")}
+                    </Text>
                     <TextInput
                       className="h-12 rounded-xl border border-muted/30 bg-secondary px-4 text-base text-text"
-                      placeholder="Ex: Excelente trabalho em equipe"
+                      placeholder={t("team.recognizeModal.titlePlaceholder")}
                       value={titulo}
                       onChangeText={setTitulo}
                       placeholderTextColor="#999"
@@ -631,11 +636,13 @@ export default function EquipePage() {
                   </View>
 
                   <View>
-                    <Text className="mb-2 font-medium text-sm text-text">Descrição</Text>
+                    <Text className="mb-2 font-medium text-sm text-text">
+                      {t("team.recognizeModal.descriptionLabel")}
+                    </Text>
                     <View className="rounded-xl border border-muted/30 bg-secondary p-4">
                       <TextInput
                         className="min-h-24 text-base text-text"
-                        placeholder="Descreva o que você gostaria de reconhecer..."
+                        placeholder={t("team.recognizeModal.descriptionPlaceholder")}
                         value={descricao}
                         onChangeText={setDescricao}
                         multiline
@@ -648,14 +655,15 @@ export default function EquipePage() {
                   </View>
                 </View>
 
-                {/* Botões de ação */}
                 <View className="mt-6 flex-row gap-3">
                   <TouchableOpacity
                     className="h-12 flex-1 items-center justify-center rounded-xl border border-muted/30 bg-background"
                     onPress={handleFecharModal}
                     disabled={enviando}
                   >
-                    <Text className="font-medium text-base text-muted">Cancelar</Text>
+                    <Text className="font-medium text-base text-muted">
+                      {t("team.recognizeModal.cancel")}
+                    </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -666,7 +674,9 @@ export default function EquipePage() {
                     {enviando ? (
                       <ActivityIndicator color="#fff" />
                     ) : (
-                      <Text className="font-semibold text-base text-white">Enviar</Text>
+                      <Text className="font-semibold text-base text-white">
+                        {t("team.recognizeModal.send")}
+                      </Text>
                     )}
                   </TouchableOpacity>
                 </View>
@@ -687,13 +697,14 @@ export default function EquipePage() {
           <View className="flex-1 items-center justify-center bg-black/80 px-6">
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View className="w-full max-w-md rounded-3xl bg-card p-6">
-                {/* Header do Modal */}
                 <View className="mb-6 flex-row items-center justify-between">
                   <View className="flex-row items-center gap-3">
                     <View className="h-10 w-10 items-center justify-center rounded-full bg-primary/20">
                       <Ionicons name="person-add" size={20} color="#1F89DA" />
                     </View>
-                    <Text className="font-bold text-xl text-text">Adicionar Membros</Text>
+                    <Text className="font-bold text-xl text-text">
+                      {t("team.addMembersModal.title")}
+                    </Text>
                   </View>
                   <TouchableOpacity
                     onPress={handleFecharModalAdd}
@@ -703,12 +714,13 @@ export default function EquipePage() {
                   </TouchableOpacity>
                 </View>
 
-                {/* Lista de Campos */}
                 <ScrollView className="max-h-96" showsVerticalScrollIndicator={false}>
                   {novosMembros.map((membro, index) => (
                     <View key={index} className="mb-4">
                       <View className="mb-2 flex-row items-center justify-between">
-                        <Text className="font-semibold text-sm text-text">Membro {index + 1}</Text>
+                        <Text className="font-semibold text-sm text-text">
+                          {t("team.addMembersModal.memberLabel", { number: index + 1 })}
+                        </Text>
                         {novosMembros.length > 1 && (
                           <TouchableOpacity
                             onPress={() => handleRemoverCampo(index)}
@@ -719,14 +731,15 @@ export default function EquipePage() {
                         )}
                       </View>
 
-                      {/* Campo Email */}
                       <View className="mb-2">
-                        <Text className="mb-1 font-medium text-xs text-muted">Email</Text>
+                        <Text className="mb-1 font-medium text-xs text-muted">
+                          {t("team.addMembersModal.emailLabel")}
+                        </Text>
                         <View className="flex-row items-center rounded-lg border border-muted/30 bg-secondary px-3">
                           <Ionicons name="mail" size={16} color="#1F89DA" />
                           <TextInput
                             className="flex-1 py-2 pl-2 text-sm text-text"
-                            placeholder="email@exemplo.com"
+                            placeholder={t("team.addMembersModal.emailPlaceholder")}
                             value={membro.email}
                             onChangeText={(text) => handleAtualizarMembro(index, "email", text)}
                             keyboardType="email-address"
@@ -736,14 +749,15 @@ export default function EquipePage() {
                         </View>
                       </View>
 
-                      {/* Campo Cargo */}
                       <View>
-                        <Text className="mb-1 font-medium text-xs text-muted">Cargo</Text>
+                        <Text className="mb-1 font-medium text-xs text-muted">
+                          {t("team.addMembersModal.roleLabel")}
+                        </Text>
                         <View className="flex-row items-center rounded-lg border border-muted/30 bg-secondary px-3">
                           <Ionicons name="briefcase" size={16} color="#1F89DA" />
                           <TextInput
                             className="flex-1 py-2 pl-2 text-sm text-text"
-                            placeholder="Ex: Desenvolvedor"
+                            placeholder={t("team.addMembersModal.rolePlaceholder")}
                             value={membro.cargo}
                             onChangeText={(text) => handleAtualizarMembro(index, "cargo", text)}
                             placeholderTextColor="#999"
@@ -753,7 +767,6 @@ export default function EquipePage() {
                     </View>
                   ))}
 
-                  {/* Botão Adicionar Mais */}
                   <TouchableOpacity
                     className="mb-4 flex-row items-center justify-center gap-2 rounded-xl border border-dashed border-primary/50 bg-primary/10 py-3"
                     onPress={handleAdicionarCampo}
@@ -761,19 +774,20 @@ export default function EquipePage() {
                   >
                     <Ionicons name="add-circle" size={20} color="#1F89DA" />
                     <Text className="font-semibold text-sm text-primary">
-                      Adicionar outro membro
+                      {t("team.addMembersModal.addAnother")}
                     </Text>
                   </TouchableOpacity>
                 </ScrollView>
 
-                {/* Botões de Ação */}
                 <View className="mt-4 flex-row gap-3">
                   <TouchableOpacity
                     className="h-12 flex-1 items-center justify-center rounded-xl border border-muted/30 bg-background"
                     onPress={handleFecharModalAdd}
                     disabled={adicionandoMembros}
                   >
-                    <Text className="font-medium text-base text-muted">Cancelar</Text>
+                    <Text className="font-medium text-base text-muted">
+                      {t("team.addMembersModal.cancel")}
+                    </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -784,7 +798,9 @@ export default function EquipePage() {
                     {adicionandoMembros ? (
                       <ActivityIndicator color="#fff" />
                     ) : (
-                      <Text className="font-semibold text-base text-white">Adicionar</Text>
+                      <Text className="font-semibold text-base text-white">
+                        {t("team.addMembersModal.add")}
+                      </Text>
                     )}
                   </TouchableOpacity>
                 </View>
@@ -805,13 +821,14 @@ export default function EquipePage() {
           <View className="flex-1 items-center justify-center bg-black/80 px-6">
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View className="w-full max-w-96 rounded-3xl bg-card p-6">
-                {/* Header */}
                 <View className="mb-6 flex-row items-center justify-between">
                   <View className="flex-row items-center gap-3">
                     <View className="h-12 w-12 items-center justify-center rounded-full bg-primary/20">
                       <Ionicons name="people" size={24} color="#1F89DA" />
                     </View>
-                    <Text className="font-bold text-xl text-text">Criar Equipe</Text>
+                    <Text className="font-bold text-xl text-text">
+                      {t("team.createTeamModal.title")}
+                    </Text>
                   </View>
                   <TouchableOpacity
                     onPress={handleFecharModalCriarEquipe}
@@ -823,14 +840,15 @@ export default function EquipePage() {
                 </View>
 
                 <ScrollView showsVerticalScrollIndicator={false}>
-                  {/* Nome da Equipe */}
                   <View className="mb-4">
-                    <Text className="mb-2 font-medium text-sm text-text">Nome da Equipe *</Text>
+                    <Text className="mb-2 font-medium text-sm text-text">
+                      {t("team.createTeamModal.nameLabel")}
+                    </Text>
                     <View className="flex-row items-center rounded-lg border border-muted/30 bg-secondary px-3">
                       <Ionicons name="people" size={16} color="#1F89DA" />
                       <TextInput
                         className="flex-1 py-2 pl-2 text-sm text-text"
-                        placeholder="Ex: Time de Desenvolvimento"
+                        placeholder={t("team.createTeamModal.namePlaceholder")}
                         value={nomeNovaEquipe}
                         onChangeText={setNomeNovaEquipe}
                         placeholderTextColor="#999"
@@ -839,13 +857,14 @@ export default function EquipePage() {
                     </View>
                   </View>
 
-                  {/* Descrição da Equipe */}
                   <View className="mb-4">
-                    <Text className="mb-2 font-medium text-sm text-text">Descrição</Text>
+                    <Text className="mb-2 font-medium text-sm text-text">
+                      {t("team.createTeamModal.descriptionLabel")}
+                    </Text>
                     <View className="rounded-lg border border-muted/30 bg-secondary px-3 py-2">
                       <TextInput
                         className="text-sm text-text"
-                        placeholder="Descreva os objetivos da equipe..."
+                        placeholder={t("team.createTeamModal.descriptionPlaceholder")}
                         value={descricaoNovaEquipe}
                         onChangeText={setDescricaoNovaEquipe}
                         placeholderTextColor="#999"
@@ -856,14 +875,15 @@ export default function EquipePage() {
                     </View>
                   </View>
 
-                  {/* Cargo do Criador */}
                   <View className="mb-6">
-                    <Text className="mb-2 font-medium text-sm text-text">Seu Cargo *</Text>
+                    <Text className="mb-2 font-medium text-sm text-text">
+                      {t("team.createTeamModal.roleLabel")}
+                    </Text>
                     <View className="flex-row items-center rounded-lg border border-muted/30 bg-secondary px-3">
                       <Ionicons name="briefcase" size={16} color="#1F89DA" />
                       <TextInput
                         className="flex-1 py-2 pl-2 text-sm text-text"
-                        placeholder="Ex: Gerente de Projetos"
+                        placeholder={t("team.createTeamModal.rolePlaceholder")}
                         value={cargoCriador}
                         onChangeText={setCargoCriador}
                         placeholderTextColor="#999"
@@ -872,14 +892,15 @@ export default function EquipePage() {
                     </View>
                   </View>
 
-                  {/* Botões */}
                   <View className="flex-row gap-3">
                     <TouchableOpacity
                       className="h-12 flex-1 items-center justify-center rounded-xl border border-muted/30 bg-background"
                       onPress={handleFecharModalCriarEquipe}
                       disabled={criandoEquipe}
                     >
-                      <Text className="font-medium text-base text-muted">Cancelar</Text>
+                      <Text className="font-medium text-base text-muted">
+                        {t("team.createTeamModal.cancel")}
+                      </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -890,7 +911,9 @@ export default function EquipePage() {
                       {criandoEquipe ? (
                         <ActivityIndicator color="#fff" />
                       ) : (
-                        <Text className="font-semibold text-base text-white">Criar</Text>
+                        <Text className="font-semibold text-base text-white">
+                          {t("team.createTeamModal.create")}
+                        </Text>
                       )}
                     </TouchableOpacity>
                   </View>

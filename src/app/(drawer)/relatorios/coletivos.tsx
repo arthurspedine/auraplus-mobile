@@ -2,6 +2,7 @@ import { request } from "@/helper/request";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -23,18 +24,40 @@ interface RelatorioEquipe {
   totalReports: number;
 }
 
-const sentimentosConfig: Record<
-  SentimentoTipo,
-  { emoji: string; cor: string; nome: string; bgColor: string }
-> = {
-  MUITO_TRISTE: { emoji: "😢", cor: "#ef4444", nome: "Muito Triste", bgColor: "#ef4444" },
-  TRISTE: { emoji: "😕", cor: "#f97316", nome: "Triste", bgColor: "#f97316" },
-  NEUTRO: { emoji: "😐", cor: "#fbbf24", nome: "Neutro", bgColor: "#fbbf24" },
-  FELIZ: { emoji: "😊", cor: "#84cc16", nome: "Feliz", bgColor: "#84cc16" },
-  MUITO_FELIZ: { emoji: "😄", cor: "#22c55e", nome: "Muito Feliz", bgColor: "#22c55e" },
-};
-
 export default function RelatoriosColetivoScreen() {
+  const { t } = useTranslation();
+
+  const sentimentosConfig: Record<
+    SentimentoTipo,
+    { emoji: string; cor: string; nome: string; bgColor: string }
+  > = {
+    MUITO_TRISTE: {
+      emoji: "😢",
+      cor: "#ef4444",
+      nome: t("reports.sentiments.MUITO_TRISTE"),
+      bgColor: "#ef4444",
+    },
+    TRISTE: {
+      emoji: "😕",
+      cor: "#f97316",
+      nome: t("reports.sentiments.TRISTE"),
+      bgColor: "#f97316",
+    },
+    NEUTRO: {
+      emoji: "😐",
+      cor: "#fbbf24",
+      nome: t("reports.sentiments.NEUTRO"),
+      bgColor: "#fbbf24",
+    },
+    FELIZ: { emoji: "😊", cor: "#84cc16", nome: t("reports.sentiments.FELIZ"), bgColor: "#84cc16" },
+    MUITO_FELIZ: {
+      emoji: "😄",
+      cor: "#22c55e",
+      nome: t("reports.sentiments.MUITO_FELIZ"),
+      bgColor: "#22c55e",
+    },
+  };
+
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [relatorio, setRelatorio] = useState<RelatorioEquipe | null>(null);
@@ -45,20 +68,21 @@ export default function RelatoriosColetivoScreen() {
   const [mesSelecionado, setMesSelecionado] = useState(currentMonth + 1);
 
   const anos = [currentYear - 2, currentYear - 1, currentYear];
-  const meses = [
-    { numero: 1, nome: "Janeiro" },
-    { numero: 2, nome: "Fevereiro" },
-    { numero: 3, nome: "Março" },
-    { numero: 4, nome: "Abril" },
-    { numero: 5, nome: "Maio" },
-    { numero: 6, nome: "Junho" },
-    { numero: 7, nome: "Julho" },
-    { numero: 8, nome: "Agosto" },
-    { numero: 9, nome: "Setembro" },
-    { numero: 10, nome: "Outubro" },
-    { numero: 11, nome: "Novembro" },
-    { numero: 12, nome: "Dezembro" },
+  const getMeses = () => [
+    { numero: 1, nome: t("reports.months.1") },
+    { numero: 2, nome: t("reports.months.2") },
+    { numero: 3, nome: t("reports.months.3") },
+    { numero: 4, nome: t("reports.months.4") },
+    { numero: 5, nome: t("reports.months.5") },
+    { numero: 6, nome: t("reports.months.6") },
+    { numero: 7, nome: t("reports.months.7") },
+    { numero: 8, nome: t("reports.months.8") },
+    { numero: 9, nome: t("reports.months.9") },
+    { numero: 10, nome: t("reports.months.10") },
+    { numero: 11, nome: t("reports.months.11") },
+    { numero: 12, nome: t("reports.months.12") },
   ];
+  const meses = getMeses();
 
   const carregarRelatorio = async (isRefresh = false) => {
     if (isRefresh) {
@@ -111,19 +135,25 @@ export default function RelatoriosColetivoScreen() {
         }
       >
         <View className="pt-4">
-          <Text className="mb-2 font-extrabold text-3xl text-text">Relatórios Coletivos</Text>
-          <Text className="mb-6 text-base text-muted">Visualize o clima da sua equipe</Text>
+          <Text className="mb-2 font-extrabold text-3xl text-text">
+            {t("reports.collective.title")}
+          </Text>
+          <Text className="mb-6 text-base text-muted">{t("reports.collective.subtitle")}</Text>
 
           {/* Filtros */}
           <View className="mb-4">
             <View className="mb-3 flex-row items-center gap-2">
               <Ionicons name="filter" size={18} color="#1F89DA" />
-              <Text className="font-semibold text-sm text-text">Filtros</Text>
+              <Text className="font-semibold text-sm text-text">
+                {t("reports.collective.filters")}
+              </Text>
             </View>
 
             {/* Filtro de Ano */}
             <View className="mb-3">
-              <Text className="mb-2 font-medium text-xs text-muted">Ano</Text>
+              <Text className="mb-2 font-medium text-xs text-muted">
+                {t("reports.collective.year")}
+              </Text>
               <View className="flex-row gap-2">
                 {anos.map((ano) => (
                   <TouchableOpacity
@@ -150,7 +180,9 @@ export default function RelatoriosColetivoScreen() {
 
             {/* Filtro de Mês */}
             <View>
-              <Text className="mb-2 font-medium text-xs text-muted">Mês</Text>
+              <Text className="mb-2 font-medium text-xs text-muted">
+                {t("reports.collective.month")}
+              </Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -186,7 +218,10 @@ export default function RelatoriosColetivoScreen() {
             <View className="flex-row items-center justify-center gap-2">
               <Ionicons name="calendar" size={16} color="#1F89DA" />
               <Text className="font-semibold text-sm text-primary">
-                {meses.find((m) => m.numero === mesSelecionado)?.nome} de {anoSelecionado}
+                {t("reports.collective.selectedPeriod", {
+                  month: meses.find((m) => m.numero === mesSelecionado)?.nome,
+                  year: anoSelecionado,
+                })}
               </Text>
             </View>
           </View>
@@ -202,7 +237,9 @@ export default function RelatoriosColetivoScreen() {
               <View className="overflow-hidden rounded-3xl bg-card p-6">
                 <View className="mb-4 flex-row items-center gap-2">
                   <Ionicons name="people" size={24} color="#1F89DA" />
-                  <Text className="font-bold text-xl text-text">Equipe</Text>
+                  <Text className="font-bold text-xl text-text">
+                    {t("reports.collective.team")}
+                  </Text>
                 </View>
 
                 <View className="items-center rounded-xl bg-primary/10 p-4">
@@ -214,7 +251,9 @@ export default function RelatoriosColetivoScreen() {
               <View className="overflow-hidden rounded-3xl bg-card p-6">
                 <View className="mb-4 flex-row items-center gap-2">
                   <Ionicons name="heart" size={24} color="#1F89DA" />
-                  <Text className="font-bold text-xl text-text">Clima Emocional</Text>
+                  <Text className="font-bold text-xl text-text">
+                    {t("reports.collective.emotionalClimate")}
+                  </Text>
                 </View>
 
                 {relatorio.sentimentoMedio && sentimentosConfig[relatorio.sentimentoMedio] ? (
@@ -234,14 +273,14 @@ export default function RelatoriosColetivoScreen() {
                       {sentimentosConfig[relatorio.sentimentoMedio].nome}
                     </Text>
                     <Text className="mt-2 text-center text-sm text-muted">
-                      Sentimento médio da equipe
+                      {t("reports.collective.averageSentiment")}
                     </Text>
                   </View>
                 ) : (
                   <View className="items-center rounded-2xl bg-muted/10 p-6">
                     <Ionicons name="help-circle-outline" size={48} color="#666" />
                     <Text className="mt-3 text-center text-sm text-muted">
-                      Dados insuficientes para calcular o clima emocional neste período
+                      {t("reports.collective.insufficientData")}
                     </Text>
                   </View>
                 )}
@@ -251,7 +290,9 @@ export default function RelatoriosColetivoScreen() {
               <View className="overflow-hidden rounded-3xl bg-card p-6">
                 <View className="mb-4 flex-row items-center gap-2">
                   <Ionicons name="stats-chart" size={24} color="#1F89DA" />
-                  <Text className="font-bold text-xl text-text">Reconhecimentos</Text>
+                  <Text className="font-bold text-xl text-text">
+                    {t("reports.collective.recognitionsTitle")}
+                  </Text>
                 </View>
 
                 <View className="items-center rounded-2xl bg-green-500/10 p-6">
@@ -262,9 +303,11 @@ export default function RelatoriosColetivoScreen() {
                     {relatorio.totalReports}
                   </Text>
                   <Text className="text-center font-medium text-sm text-muted">
-                    {relatorio.totalReports === 1
-                      ? "Reconhecimento enviado"
-                      : "Reconhecimentos enviados"}
+                    {t(
+                      relatorio.totalReports === 1
+                        ? "reports.collective.recognitionSent"
+                        : "reports.collective.recognitionsSent"
+                    )}
                   </Text>
                 </View>
               </View>
@@ -274,7 +317,9 @@ export default function RelatoriosColetivoScreen() {
                 <View className="overflow-hidden rounded-3xl bg-card p-6">
                   <View className="mb-4 flex-row items-center gap-2">
                     <Ionicons name="sparkles" size={24} color="#1F89DA" />
-                    <Text className="font-bold text-xl text-text">Resumo do Período</Text>
+                    <Text className="font-bold text-xl text-text">
+                      {t("reports.collective.periodSummary")}
+                    </Text>
                   </View>
 
                   <View className="rounded-xl bg-primary/5 p-4">
@@ -283,7 +328,9 @@ export default function RelatoriosColetivoScreen() {
 
                   <View className="mt-3 flex-row items-center gap-2">
                     <Ionicons name="information-circle" size={16} color="#666" />
-                    <Text className="text-muted text-xs">Resumo gerado por IA</Text>
+                    <Text className="text-muted text-xs">
+                      {t("reports.collective.aiGenerated")}
+                    </Text>
                   </View>
                 </View>
               )}
@@ -292,10 +339,10 @@ export default function RelatoriosColetivoScreen() {
             <View className="flex-1 items-center justify-center py-20">
               <Ionicons name="analytics-outline" size={64} color="#1F89DA" />
               <Text className="mt-4 text-center text-base text-text">
-                Nenhum relatório disponível
+                {t("reports.collective.noReportTitle")}
               </Text>
               <Text className="mt-2 text-center text-sm text-muted">
-                Não há dados para o período selecionado.
+                {t("reports.collective.noReportMessage")}
               </Text>
             </View>
           )}
