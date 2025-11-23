@@ -3,8 +3,10 @@ import { Asset } from "expo-asset";
 import { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
 export default function SobreScreen() {
+  const { t } = useTranslation();
   const [commitHash, setCommitHash] = useState<string>("dev-mode");
 
   // Carregar o hash do commit
@@ -35,22 +37,22 @@ export default function SobreScreen() {
   const appInfo = [
     {
       icon: "cube-outline" as const,
-      label: "Versão",
+      label: t("about.version"),
       value: "1.0.0",
     },
     {
       icon: "git-commit-outline" as const,
-      label: "Commit Hash",
+      label: t("about.commitHash"),
       value: commitHash,
     },
     {
       icon: "calendar-outline" as const,
-      label: "Ano de Lançamento",
+      label: t("about.releaseYear"),
       value: "2025",
     },
     {
       icon: "code-slash-outline" as const,
-      label: "Plataforma",
+      label: t("about.platform"),
       value: "React Native + Expo",
     },
   ];
@@ -63,10 +65,8 @@ export default function SobreScreen() {
           <View className="mb-2 size-24 items-center justify-center rounded-3xl bg-primary/10">
             <Ionicons name="information-circle" size={56} color="#1F89DA" />
           </View>
-          <Text className="font-bold text-3xl text-primary">Aura+</Text>
-          <Text className="mt-2 text-center text-lg text-muted">
-            Conectando pessoas e fortalecendo equipes
-          </Text>
+          <Text className="font-bold text-3xl text-primary">{t("about.appName")}</Text>
+          <Text className="mt-2 text-center text-lg text-muted">{t("about.tagline")}</Text>
         </View>
 
         {/* Card de Informações sobre o Aura+ */}
@@ -74,13 +74,9 @@ export default function SobreScreen() {
           <View className="bg-primary/10 p-6">
             <View className="mb-3 flex-row items-center gap-2">
               <Ionicons name="heart" size={24} color="#1F89DA" />
-              <Text className="font-bold text-lg text-text">Sobre o Aura+</Text>
+              <Text className="font-bold text-lg text-text">{t("about.aboutTitle")}</Text>
             </View>
-            <Text className="leading-6 text-sm text-muted">
-              O Aura+ foi criado para fortalecer a cultura da nossa empresa, mantendo os
-              colaboradores conectados e engajados. Aqui você pode compartilhar como se sente,
-              enviar reconhecimentos e acompanhar o clima da equipe.
-            </Text>
+            <Text className="leading-6 text-sm text-muted">{t("about.aboutText")}</Text>
           </View>
         </View>
 
@@ -88,7 +84,7 @@ export default function SobreScreen() {
         <View className="mb-6">
           <View className="mb-4 flex-row items-center">
             <Ionicons name="information-circle-outline" size={24} color="#1F89DA" />
-            <Text className="ml-2 font-semibold text-xl text-text">Informações do App</Text>
+            <Text className="ml-2 font-semibold text-xl text-text">{t("about.appInfo")}</Text>
           </View>
           <View className="gap-3">
             {appInfo.map((info, index) => (
@@ -119,9 +115,7 @@ export default function SobreScreen() {
 
         {/* Footer */}
         <View className="mb-8 items-center py-4">
-          <Text className="text-center text-muted text-xs">
-            © 2025 Aura+. Todos os direitos reservados.
-          </Text>
+          <Text className="text-center text-muted text-xs">{t("about.copyright")}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

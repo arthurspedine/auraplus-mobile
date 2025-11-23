@@ -76,6 +76,18 @@
     "techInnovation": "Technology and innovation",
     "techInnovationText": "We developed this project as part of FIAP's Global Solution 2025-2, applying best practices in mobile development with React Native and Expo. Our architecture was designed to be scalable, modern, and provide the best possible experience to users."
   },
+  "about": {
+    "appName": "Aura+",
+    "tagline": "Connecting people and strengthening teams",
+    "aboutTitle": "About Aura+",
+    "aboutText": "Aura+ was created to strengthen our company culture, keeping employees connected and engaged. Here you can share how you feel, send recognitions, and track the team's climate.",
+    "appInfo": "App Information",
+    "version": "Version",
+    "commitHash": "Commit Hash",
+    "releaseYear": "Release Year",
+    "platform": "Platform",
+    "copyright": "© 2025 Aura+. All rights reserved."
+  },
   "language": {
     "title": "Select Language"
   }
