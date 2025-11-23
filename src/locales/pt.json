@@ -50,12 +50,20 @@
   },
   "navigation": {
     "home": "Home",
-    "team": "Equipe",
+    "team": "Minha Equipe",
     "reports": "Relatórios",
     "account": "Conta",
     "logout": "Sair",
     "developers": "Desenvolvedores",
-    "about": "Sobre"
+    "about": "Sobre",
+    "individual": "Individuais",
+    "collective": "Coletivos",
+    "wall": "Mural"
+  },
+  "reports": {
+    "title": "Relatórios",
+    "noTeamTitle": "Você não faz parte de uma equipe",
+    "noTeamMessage": "Para visualizar relatórios, é necessário fazer parte de uma equipe. Entre em contato com seu gestor."
   },
   "language": {
     "title": "Selecionar Idioma"

@@ -1,8 +1,10 @@
 import { Header } from "@/components/header";
 import { Ionicons } from "@expo/vector-icons";
 import { Drawer } from "expo-router/drawer";
+import { useTranslation } from "react-i18next";
 
 export default function DrawerLayout() {
+  const { t } = useTranslation();
   return (
     <Drawer
       screenOptions={{
@@ -20,7 +22,7 @@ export default function DrawerLayout() {
       <Drawer.Screen
         name="home"
         options={{
-          title: "Home",
+          title: t("navigation.home"),
           drawerIcon: ({ color, size }) => <Ionicons name="home" color={color} size={size} />,
         }}
       />
@@ -28,7 +30,7 @@ export default function DrawerLayout() {
       <Drawer.Screen
         name="equipe"
         options={{
-          title: "Minha Equipe",
+          title: t("navigation.team"),
           drawerIcon: ({ color, size }) => <Ionicons name="people" color={color} size={size} />,
         }}
       />
@@ -36,7 +38,7 @@ export default function DrawerLayout() {
       <Drawer.Screen
         name="relatorios"
         options={{
-          title: "Relatórios",
+          title: t("navigation.reports"),
           drawerIcon: ({ color, size }) => <Ionicons name="bar-chart" color={color} size={size} />,
         }}
       />

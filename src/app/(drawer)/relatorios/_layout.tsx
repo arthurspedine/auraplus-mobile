@@ -2,11 +2,13 @@ import { useAuth } from "@/context/auth-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function RelatoriosTabsLayout() {
   const { usuario, refreshUsuario } = useAuth();
+  const { t } = useTranslation();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Atualiza dados do usuário ao focar na tela
@@ -27,17 +29,14 @@ export default function RelatoriosTabsLayout() {
       <SafeAreaView className="flex-1 bg-background">
         <View className="flex-1 px-6">
           <View className="mb-6 pt-4">
-            <Text className="font-extrabold text-3xl text-text">Relatórios</Text>
+            <Text className="font-extrabold text-3xl text-text">{t("reports.title")}</Text>
           </View>
 
           <View className="flex-1 mt-20 items-center">
             <Ionicons name="analytics-outline" size={64} color="#1F89DA" />
-            <Text className="mt-4 text-center text-base text-text">
-              Você não faz parte de uma equipe
-            </Text>
+            <Text className="mt-4 text-center text-base text-text">{t("reports.noTeamTitle")}</Text>
             <Text className="mt-2 px-6 text-center text-sm text-muted">
-              Para visualizar relatórios, é necessário fazer parte de uma equipe. Entre em contato
-              com seu gestor.
+              {t("reports.noTeamMessage")}
             </Text>
           </View>
         </View>
@@ -59,7 +58,7 @@ export default function RelatoriosTabsLayout() {
       <Tabs.Screen
         name="individuais"
         options={{
-          title: "Individuais",
+          title: t("navigation.individual"),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? "person" : "person-outline"} color={color} size={size} />
           ),
@@ -68,7 +67,7 @@ export default function RelatoriosTabsLayout() {
       <Tabs.Screen
         name="coletivos"
         options={{
-          title: "Coletivos",
+          title: t("navigation.collective"),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? "people" : "people-outline"} color={color} size={size} />
           ),
@@ -77,7 +76,7 @@ export default function RelatoriosTabsLayout() {
       <Tabs.Screen
         name="mural"
         options={{
-          title: "Mural",
+          title: t("navigation.wall"),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? "trophy" : "trophy-outline"} color={color} size={size} />
           ),

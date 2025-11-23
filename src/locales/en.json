@@ -50,12 +50,20 @@
   },
   "navigation": {
     "home": "Home",
-    "team": "Team",
+    "team": "My Team",
     "reports": "Reports",
     "account": "Account",
     "logout": "Logout",
     "developers": "Developers",
-    "about": "About"
+    "about": "About",
+    "individual": "Individual",
+    "collective": "Collective",
+    "wall": "Wall"
+  },
+  "reports": {
+    "title": "Reports",
+    "noTeamTitle": "You are not part of a team",
+    "noTeamMessage": "To view reports, you need to be part of a team. Contact your manager."
   },
   "language": {
     "title": "Select Language"

@@ -1,7 +1,9 @@
-import { Ionicons } from "@expo/vector-icons"
-import { Tabs } from "expo-router"
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 export default function HomeTabsLayout() {
+  const { t } = useTranslation();
   return (
     <Tabs
       screenOptions={{
@@ -16,34 +18,26 @@ export default function HomeTabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: t("navigation.home"),
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? "home" : "home-outline"}
-              color={color}
-              size={size}
-            />
+            <Ionicons name={focused ? "home" : "home-outline"} color={color} size={size} />
           ),
         }}
       />
       <Tabs.Screen
         name="devs"
         options={{
-          title: "Desenvolvedores",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="code" color={color} size={size} />
-          ),
+          title: t("navigation.developers"),
+          tabBarIcon: ({ color, size }) => <Ionicons name="code" color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="sobre"
         options={{
-          title: "Sobre",
+          title: t("navigation.about"),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
-              name={
-                focused ? "information-circle" : "information-circle-outline"
-              }
+              name={focused ? "information-circle" : "information-circle-outline"}
               color={color}
               size={size}
             />
@@ -51,5 +45,5 @@ export default function HomeTabsLayout() {
         }}
       />
     </Tabs>
-  )
+  );
 }
