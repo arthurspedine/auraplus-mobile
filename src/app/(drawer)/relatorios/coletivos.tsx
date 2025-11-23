@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type SentimentoTipo = "FELIZ" | "TRISTE" | "ANSIOSO" | "ESTRESSADO" | "MOTIVADO" | "CANSADO";
+type SentimentoTipo = "MUITO_TRISTE" | "TRISTE" | "NEUTRO" | "FELIZ" | "MUITO_FELIZ";
 
 interface RelatorioEquipe {
   mesReferente: string;
@@ -27,12 +27,11 @@ const sentimentosConfig: Record<
   SentimentoTipo,
   { emoji: string; cor: string; nome: string; bgColor: string }
 > = {
-  FELIZ: { emoji: "😊", cor: "#22c55e", nome: "Feliz", bgColor: "#22c55e" },
-  TRISTE: { emoji: "😢", cor: "#3b82f6", nome: "Triste", bgColor: "#3b82f6" },
-  ANSIOSO: { emoji: "😰", cor: "#eab308", nome: "Ansioso", bgColor: "#eab308" },
-  ESTRESSADO: { emoji: "😣", cor: "#ef4444", nome: "Estressado", bgColor: "#ef4444" },
-  MOTIVADO: { emoji: "💪", cor: "#8b5cf6", nome: "Motivado", bgColor: "#8b5cf6" },
-  CANSADO: { emoji: "😴", cor: "#64748b", nome: "Cansado", bgColor: "#64748b" },
+  MUITO_TRISTE: { emoji: "😢", cor: "#ef4444", nome: "Muito Triste", bgColor: "#ef4444" },
+  TRISTE: { emoji: "😕", cor: "#f97316", nome: "Triste", bgColor: "#f97316" },
+  NEUTRO: { emoji: "😐", cor: "#fbbf24", nome: "Neutro", bgColor: "#fbbf24" },
+  FELIZ: { emoji: "😊", cor: "#84cc16", nome: "Feliz", bgColor: "#84cc16" },
+  MUITO_FELIZ: { emoji: "😄", cor: "#22c55e", nome: "Muito Feliz", bgColor: "#22c55e" },
 };
 
 export default function RelatoriosColetivoScreen() {
@@ -43,22 +42,22 @@ export default function RelatoriosColetivoScreen() {
   const currentMonth = new Date().getMonth();
 
   const [anoSelecionado, setAnoSelecionado] = useState(currentYear);
-  const [mesSelecionado, setMesSelecionado] = useState(currentMonth);
+  const [mesSelecionado, setMesSelecionado] = useState(currentMonth + 1);
 
   const anos = [currentYear - 2, currentYear - 1, currentYear];
   const meses = [
-    { numero: 0, nome: "Janeiro" },
-    { numero: 1, nome: "Fevereiro" },
-    { numero: 2, nome: "Março" },
-    { numero: 3, nome: "Abril" },
-    { numero: 4, nome: "Maio" },
-    { numero: 5, nome: "Junho" },
-    { numero: 6, nome: "Julho" },
-    { numero: 7, nome: "Agosto" },
-    { numero: 8, nome: "Setembro" },
-    { numero: 9, nome: "Outubro" },
-    { numero: 10, nome: "Novembro" },
-    { numero: 11, nome: "Dezembro" },
+    { numero: 1, nome: "Janeiro" },
+    { numero: 2, nome: "Fevereiro" },
+    { numero: 3, nome: "Março" },
+    { numero: 4, nome: "Abril" },
+    { numero: 5, nome: "Maio" },
+    { numero: 6, nome: "Junho" },
+    { numero: 7, nome: "Julho" },
+    { numero: 8, nome: "Agosto" },
+    { numero: 9, nome: "Setembro" },
+    { numero: 10, nome: "Outubro" },
+    { numero: 11, nome: "Novembro" },
+    { numero: 12, nome: "Dezembro" },
   ];
 
   const carregarRelatorio = async (isRefresh = false) => {
@@ -69,7 +68,7 @@ export default function RelatoriosColetivoScreen() {
     }
 
     try {
-      const token = await AsyncStorage.getItem("token");
+      const token = await AsyncStorage.getItem("jwt_token");
       if (!token) return;
 
       const response: any = await request(
@@ -81,7 +80,7 @@ export default function RelatoriosColetivoScreen() {
 
       setRelatorio(response as RelatorioEquipe);
     } catch (error) {
-      console.error("Erro ao carregar relatório da equipe:", error);
+      // Silenciosamente trata como sem dados disponíveis
       setRelatorio(null);
     } finally {
       setLoading(false);
@@ -187,7 +186,7 @@ export default function RelatoriosColetivoScreen() {
             <View className="flex-row items-center justify-center gap-2">
               <Ionicons name="calendar" size={16} color="#1F89DA" />
               <Text className="font-semibold text-sm text-primary">
-                {meses[mesSelecionado].nome} de {anoSelecionado}
+                {meses.find((m) => m.numero === mesSelecionado)?.nome} de {anoSelecionado}
               </Text>
             </View>
           </View>
@@ -218,7 +217,7 @@ export default function RelatoriosColetivoScreen() {
                   <Text className="font-bold text-xl text-text">Clima Emocional</Text>
                 </View>
 
-                {relatorio.sentimentoMedio && sentimentosConfig[relatorio.sentimentoMedio] && (
+                {relatorio.sentimentoMedio && sentimentosConfig[relatorio.sentimentoMedio] ? (
                   <View
                     className="items-center rounded-2xl p-6"
                     style={{
@@ -236,6 +235,13 @@ export default function RelatoriosColetivoScreen() {
                     </Text>
                     <Text className="mt-2 text-center text-sm text-muted">
                       Sentimento médio da equipe
+                    </Text>
+                  </View>
+                ) : (
+                  <View className="items-center rounded-2xl bg-muted/10 p-6">
+                    <Ionicons name="help-circle-outline" size={48} color="#666" />
+                    <Text className="mt-3 text-center text-sm text-muted">
+                      Dados insuficientes para calcular o clima emocional neste período
                     </Text>
                   </View>
                 )}

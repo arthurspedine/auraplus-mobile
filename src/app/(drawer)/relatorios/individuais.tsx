@@ -28,22 +28,22 @@ export default function RelatoriosIndividuaisScreen() {
   const currentMonth = new Date().getMonth();
 
   const [anoSelecionado, setAnoSelecionado] = useState(currentYear);
-  const [mesSelecionado, setMesSelecionado] = useState(currentMonth);
+  const [mesSelecionado, setMesSelecionado] = useState(currentMonth + 1);
 
   const anos = [currentYear - 2, currentYear - 1, currentYear];
   const meses = [
-    { numero: 0, nome: "Janeiro" },
-    { numero: 1, nome: "Fevereiro" },
-    { numero: 2, nome: "Março" },
-    { numero: 3, nome: "Abril" },
-    { numero: 4, nome: "Maio" },
-    { numero: 5, nome: "Junho" },
-    { numero: 6, nome: "Julho" },
-    { numero: 7, nome: "Agosto" },
-    { numero: 8, nome: "Setembro" },
-    { numero: 9, nome: "Outubro" },
-    { numero: 10, nome: "Novembro" },
-    { numero: 11, nome: "Dezembro" },
+    { numero: 1, nome: "Janeiro" },
+    { numero: 2, nome: "Fevereiro" },
+    { numero: 3, nome: "Março" },
+    { numero: 4, nome: "Abril" },
+    { numero: 5, nome: "Maio" },
+    { numero: 6, nome: "Junho" },
+    { numero: 7, nome: "Julho" },
+    { numero: 8, nome: "Agosto" },
+    { numero: 9, nome: "Setembro" },
+    { numero: 10, nome: "Outubro" },
+    { numero: 11, nome: "Novembro" },
+    { numero: 12, nome: "Dezembro" },
   ];
 
   const carregarRelatorio = async (isRefresh = false) => {
@@ -54,7 +54,7 @@ export default function RelatoriosIndividuaisScreen() {
     }
 
     try {
-      const token = await AsyncStorage.getItem("token");
+      const token = await AsyncStorage.getItem("jwt_token");
       if (!token) return;
 
       const response: any = await request(
@@ -66,7 +66,7 @@ export default function RelatoriosIndividuaisScreen() {
 
       setRelatorio(response as RelatorioIndividual);
     } catch (error) {
-      console.error("Erro ao carregar relatório:", error);
+      // Silenciosamente trata como sem dados disponíveis
       setRelatorio(null);
     } finally {
       setLoading(false);
@@ -172,7 +172,7 @@ export default function RelatoriosIndividuaisScreen() {
             <View className="flex-row items-center justify-center gap-2">
               <Ionicons name="calendar" size={16} color="#1F89DA" />
               <Text className="font-semibold text-sm text-primary">
-                {meses[mesSelecionado].nome} de {anoSelecionado}
+                {meses.find((m) => m.numero === mesSelecionado)?.nome} de {anoSelecionado}
               </Text>
             </View>
           </View>
