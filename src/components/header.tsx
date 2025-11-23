@@ -1,25 +1,19 @@
-import { Ionicons } from "@expo/vector-icons"
-import type { DrawerNavigationProp } from "@react-navigation/drawer"
-import { useNavigation } from "@react-navigation/native"
-import { useRouter } from "expo-router"
-import { useState } from "react"
-import {
-  Alert,
-  Modal,
-  Pressable,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native"
+import { Ionicons } from "@expo/vector-icons";
+import type { DrawerNavigationProp } from "@react-navigation/drawer";
+import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { LanguageToggle } from "@/components/language-toggle";
+import { Alert, Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
 
 type RootDrawerParamList = {
-  Home: undefined
-}
+  Home: undefined;
+};
 
 export function Header() {
-  const router = useRouter()
-  const navigation = useNavigation<DrawerNavigationProp<RootDrawerParamList>>()
-  const [sheetVisible, setSheetVisible] = useState(false)
+  const router = useRouter();
+  const navigation = useNavigation<DrawerNavigationProp<RootDrawerParamList>>();
+  const [sheetVisible, setSheetVisible] = useState(false);
 
   const handleLogout = async () => {
     Alert.alert("Sair", "Tem certeza que deseja sair?", [
@@ -28,17 +22,17 @@ export function Header() {
         text: "Sair",
         style: "destructive",
         onPress: async () => {
-          setSheetVisible(false)
-          router.replace("/logout")
+          setSheetVisible(false);
+          router.replace("/logout");
         },
       },
-    ])
-  }
+    ]);
+  };
 
   const handleConta = () => {
-    setSheetVisible(false)
-    router.push("/account")
-  }
+    setSheetVisible(false);
+    router.push("/account");
+  };
 
   return (
     <>
@@ -50,12 +44,15 @@ export function Header() {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          className="h-10 w-10 items-center justify-center rounded-full bg-blue-100"
-          onPress={() => setSheetVisible(true)}
-        >
-          <Ionicons name="person" size={24} color="#1F89DA" />
-        </TouchableOpacity>
+        <View className="flex-row items-center gap-4">
+          <LanguageToggle />
+          <TouchableOpacity
+            className="h-10 w-10 items-center justify-center rounded-full bg-blue-100"
+            onPress={() => setSheetVisible(true)}
+          >
+            <Ionicons name="person" size={24} color="#1F89DA" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Bottom Sheet */}
@@ -95,5 +92,5 @@ export function Header() {
         </Pressable>
       </Modal>
     </>
-  )
+  );
 }

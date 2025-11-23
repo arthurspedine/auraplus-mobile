@@ -3,6 +3,7 @@ import { request } from "@/helper/request";
 import type { Usuario } from "@/interfaces/interfaces";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -32,17 +33,18 @@ interface SentimentoRegistrado {
   data: string | null;
 }
 
-const sentimentos: SentimentoOption[] = [
-  { type: "MUITO_TRISTE", emoji: "😢", label: "Muito Triste", color: "#ef4444" },
-  { type: "TRISTE", emoji: "😕", label: "Triste", color: "#f97316" },
-  { type: "NEUTRO", emoji: "😐", label: "Neutro", color: "#fbbf24" },
-  { type: "FELIZ", emoji: "😊", label: "Feliz", color: "#84cc16" },
-  { type: "MUITO_FELIZ", emoji: "😄", label: "Muito Feliz", color: "#22c55e" },
+const getSentimentos = (t: any): SentimentoOption[] => [
+  { type: "MUITO_TRISTE", emoji: "😢", label: t("home.sentiments.verySad"), color: "#ef4444" },
+  { type: "TRISTE", emoji: "😕", label: t("home.sentiments.sad"), color: "#f97316" },
+  { type: "NEUTRO", emoji: "😐", label: t("home.sentiments.neutral"), color: "#fbbf24" },
+  { type: "FELIZ", emoji: "😊", label: t("home.sentiments.happy"), color: "#84cc16" },
+  { type: "MUITO_FELIZ", emoji: "😄", label: t("home.sentiments.veryHappy"), color: "#22c55e" },
 ];
 
 export default function HomePage() {
   const { token } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -140,6 +142,8 @@ export default function HomePage() {
     setSelectedSentimento(null);
   };
 
+  const sentimentos = getSentimentos(t);
+
   const getSentimentoOption = (tipo: Sentimento): SentimentoOption | undefined => {
     return sentimentos.find((s) => s.type === tipo);
   };
@@ -177,16 +181,16 @@ export default function HomePage() {
           {/* Header com saudação */}
           <View className="mb-8">
             <Text className="font-extrabold text-3xl text-text">
-              Olá, {usuario ? getPrimeiroNome(usuario.nome) : "Usuário"}! 👋
+              {t("home.title", { name: usuario ? getPrimeiroNome(usuario.nome) : "Usuário" })}
             </Text>
-            <Text className="mt-2 text-base text-muted">Como você está se sentindo hoje?</Text>
+            <Text className="mt-2 text-base text-muted">{t("home.subtitle")}</Text>
           </View>
 
           {/* Card de Sentimentos */}
           <View className="mb-6 overflow-hidden rounded-3xl bg-card p-6">
             <View className="mb-4 flex-row items-center gap-2">
               <Ionicons name="heart" size={24} color="#1F89DA" />
-              <Text className="font-bold text-xl text-text">Registre seu Humor</Text>
+              <Text className="font-bold text-xl text-text">{t("home.registerSentiment")}</Text>
             </View>
 
             {!temEquipe ? (
@@ -194,11 +198,10 @@ export default function HomePage() {
               <View className="items-center py-8">
                 <Ionicons name="people-outline" size={64} color="#1F89DA" />
                 <Text className="mt-4 text-center text-base text-text">
-                  Você precisa fazer parte de uma equipe
+                  {t("home.noTeamTitle")}
                 </Text>
                 <Text className="mt-2 text-center text-sm text-muted">
-                  Entre em contato com seu gestor para ser adicionado a uma equipe e começar a
-                  registrar seus sentimentos.
+                  {t("home.noTeamMessage")}
                 </Text>
               </View>
             ) : jaRegistrouHoje && sentimentoRegistrado?.tipoSentimento ? (
@@ -215,19 +218,17 @@ export default function HomePage() {
                     {getSentimentoOption(sentimentoRegistrado.tipoSentimento)?.emoji}
                   </Text>
                 </View>
-                <Text className="font-bold text-lg text-text">Sentimento Registrado! 🎉</Text>
+                <Text className="font-bold text-lg text-text">
+                  {t("home.alreadyRegisteredTitle")}
+                </Text>
                 <Text className="mt-2 text-center text-sm text-muted">
-                  Você já compartilhou como se sente hoje. Volte amanhã para registrar um novo
-                  sentimento e continuar acompanhando seu bem-estar.
+                  {t("home.alreadyRegisteredMessage")}
                 </Text>
               </View>
             ) : (
               // Seletor de sentimentos
               <>
-                <Text className="mb-6 text-sm text-muted">
-                  Selecione como você está se sentindo neste momento. Isso nos ajuda a manter um
-                  ambiente de trabalho saudável.
-                </Text>
+                <Text className="mb-6 text-sm text-muted">{t("home.sentimentPrompt")}</Text>
 
                 {/* Grid de Sentimentos */}
                 <View className="flex-row justify-between gap-2">
@@ -250,7 +251,7 @@ export default function HomePage() {
           <View className="mb-6">
             <View className="mb-4 flex-row items-center gap-2">
               <Ionicons name="flash" size={20} color="#1F89DA" />
-              <Text className="font-bold text-lg text-text">Ações Rápidas</Text>
+              <Text className="font-bold text-lg text-text">{t("home.quickActions")}</Text>
             </View>
 
             <View className="flex-row gap-3">
@@ -263,8 +264,8 @@ export default function HomePage() {
                 <View className="mb-3 h-12 w-12 items-center justify-center rounded-full bg-primary/20">
                   <Ionicons name="people" size={24} color="#1F89DA" />
                 </View>
-                <Text className="mb-1 font-semibold text-sm text-text">Minha Equipe</Text>
-                <Text className="text-muted text-xs">Ver membros e enviar reconhecimentos</Text>
+                <Text className="mb-1 font-semibold text-sm text-text">{t("home.myTeam")}</Text>
+                <Text className="text-muted text-xs">{t("home.teamDescription")}</Text>
               </TouchableOpacity>
 
               {/* Botão Relatórios */}
@@ -276,8 +277,8 @@ export default function HomePage() {
                 <View className="mb-3 h-12 w-12 items-center justify-center rounded-full bg-primary/20">
                   <Ionicons name="bar-chart" size={24} color="#1F89DA" />
                 </View>
-                <Text className="mb-1 font-semibold text-sm text-text">Relatórios</Text>
-                <Text className="text-muted text-xs">Resumos mensais por IA</Text>
+                <Text className="mb-1 font-semibold text-sm text-text">{t("home.reports")}</Text>
+                <Text className="text-muted text-xs">{t("home.reportsDescription")}</Text>
               </TouchableOpacity>
             </View>
 
@@ -291,8 +292,8 @@ export default function HomePage() {
                 <View className="mb-3 h-12 w-12 items-center justify-center rounded-full bg-primary/20">
                   <Ionicons name="person" size={24} color="#1F89DA" />
                 </View>
-                <Text className="mb-1 font-semibold text-sm text-text">Meu Perfil</Text>
-                <Text className="text-muted text-xs">Ver informações pessoais</Text>
+                <Text className="mb-1 font-semibold text-sm text-text">{t("home.myProfile")}</Text>
+                <Text className="text-muted text-xs">{t("home.profileDescription")}</Text>
               </TouchableOpacity>
 
               {/* Botão Sobre */}
@@ -304,8 +305,8 @@ export default function HomePage() {
                 <View className="mb-3 h-12 w-12 items-center justify-center rounded-full bg-primary/20">
                   <Ionicons name="information-circle" size={24} color="#1F89DA" />
                 </View>
-                <Text className="mb-1 font-semibold text-sm text-text">Sobre</Text>
-                <Text className="text-muted text-xs">Conheça o Aura+</Text>
+                <Text className="mb-1 font-semibold text-sm text-text">{t("home.about")}</Text>
+                <Text className="text-muted text-xs">{t("home.aboutDescription")}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -337,17 +338,19 @@ export default function HomePage() {
                   </View>
                   <Text className="font-bold text-2xl text-text">{selectedSentimento?.label}</Text>
                   <Text className="mt-2 text-center text-sm text-muted">
-                    Compartilhe mais sobre como você está se sentindo
+                    {t("home.modalSubtitle")}
                   </Text>
                 </View>
 
                 {/* Campo de Descrição */}
                 <View className="mb-6">
-                  <Text className="mb-2 font-medium text-sm text-text">Descrição (Opcional)</Text>
+                  <Text className="mb-2 font-medium text-sm text-text">
+                    {t("home.descriptionLabel")}
+                  </Text>
                   <View className="rounded-xl border border-muted/30 bg-secondary p-4">
                     <TextInput
                       className="min-h-24 text-base text-text"
-                      placeholder="Conte-nos mais sobre seu dia..."
+                      placeholder={t("home.descriptionPlaceholder")}
                       value={descricao}
                       onChangeText={setDescricao}
                       multiline
@@ -365,7 +368,7 @@ export default function HomePage() {
                     onPress={handleCancelar}
                     disabled={enviando}
                   >
-                    <Text className="font-medium text-base text-muted">Cancelar</Text>
+                    <Text className="font-medium text-base text-muted">{t("home.cancel")}</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -377,7 +380,9 @@ export default function HomePage() {
                     {enviando ? (
                       <ActivityIndicator color="#fff" />
                     ) : (
-                      <Text className="font-semibold text-base text-white">Enviar</Text>
+                      <Text className="font-semibold text-base text-white">
+                        {t("home.register")}
+                      </Text>
                     )}
                   </TouchableOpacity>
                 </View>

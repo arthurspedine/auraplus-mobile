@@ -1,0 +1,63 @@
+{
+  "home": {
+    "title": "Welcome, {{name}}!",
+    "subtitle": "How are you feeling today?",
+    "selectSentiment": "Select your sentiment",
+    "recognizeColleague": "Recognize a colleague",
+    "quickActions": "Quick Actions",
+    "myTeam": "My Team",
+    "reports": "Reports",
+    "myProfile": "My Profile",
+    "about": "About",
+    "loadingInfo": "Loading information...",
+    "registerSentiment": "Register Your Mood",
+    "selectYourSentiment": "Select how you're feeling:",
+    "cancel": "Cancel",
+    "register": "Send",
+    "noTeamTitle": "You need to be part of a team",
+    "noTeamMessage": "Contact your manager to be added to a team and start recording your sentiments.",
+    "alreadyRegisteredTitle": "Sentiment Registered! 🎉",
+    "alreadyRegisteredMessage": "You've already shared how you feel today. Come back tomorrow to register a new sentiment and continue tracking your well-being.",
+    "sentimentPrompt": "Select how you're feeling right now. This helps us maintain a healthy work environment.",
+    "modalSubtitle": "Share more about how you're feeling",
+    "descriptionLabel": "Description (Optional)",
+    "descriptionPlaceholder": "Tell us more about your day...",
+    "teamDescription": "View members and send recognitions",
+    "reportsDescription": "Monthly AI summaries",
+    "profileDescription": "View personal information",
+    "aboutDescription": "Learn about Aura+",
+    "recognizeModal": {
+      "title": "Recognize Colleague",
+      "selectColleague": "Select a colleague",
+      "message": "Message (optional)",
+      "writeMessage": "Write a message...",
+      "send": "Send",
+      "cancel": "Cancel",
+      "selectPlaceholder": "Choose a colleague",
+      "successTitle": "Success!",
+      "successMessage": "Recognition sent successfully!",
+      "errorTitle": "Error",
+      "errorMessage": "Error sending recognition",
+      "errorSelectColleague": "Select a colleague"
+    },
+    "sentiments": {
+      "veryHappy": "Very Happy",
+      "happy": "Happy",
+      "neutral": "Neutral",
+      "sad": "Sad",
+      "verySad": "Very Sad"
+    }
+  },
+  "navigation": {
+    "home": "Home",
+    "team": "Team",
+    "reports": "Reports",
+    "account": "Account",
+    "logout": "Logout",
+    "developers": "Developers",
+    "about": "About"
+  },
+  "language": {
+    "title": "Select Language"
+  }
+}

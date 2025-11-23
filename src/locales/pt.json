@@ -1,0 +1,63 @@
+{
+  "home": {
+    "title": "Bem-vindo, {{name}}!",
+    "subtitle": "Como você está se sentindo hoje?",
+    "selectSentiment": "Selecione seu sentimento",
+    "recognizeColleague": "Reconhecer um colega",
+    "quickActions": "Ações Rápidas",
+    "myTeam": "Minha Equipe",
+    "reports": "Relatórios",
+    "myProfile": "Meu Perfil",
+    "about": "Sobre",
+    "loadingInfo": "Carregando informações...",
+    "registerSentiment": "Registre seu Humor",
+    "selectYourSentiment": "Selecione como você está se sentindo:",
+    "cancel": "Cancelar",
+    "register": "Enviar",
+    "noTeamTitle": "Você precisa fazer parte de uma equipe",
+    "noTeamMessage": "Entre em contato com seu gestor para ser adicionado a uma equipe e começar a registrar seus sentimentos.",
+    "alreadyRegisteredTitle": "Sentimento Registrado! 🎉",
+    "alreadyRegisteredMessage": "Você já compartilhou como se sente hoje. Volte amanhã para registrar um novo sentimento e continuar acompanhando seu bem-estar.",
+    "sentimentPrompt": "Selecione como você está se sentindo neste momento. Isso nos ajuda a manter um ambiente de trabalho saudável.",
+    "modalSubtitle": "Compartilhe mais sobre como você está se sentindo",
+    "descriptionLabel": "Descrição (Opcional)",
+    "descriptionPlaceholder": "Conte-nos mais sobre seu dia...",
+    "teamDescription": "Ver membros e enviar reconhecimentos",
+    "reportsDescription": "Resumos mensais por IA",
+    "profileDescription": "Ver informações pessoais",
+    "aboutDescription": "Conheça o Aura+",
+    "recognizeModal": {
+      "title": "Reconhecer Colega",
+      "selectColleague": "Selecione um colega",
+      "message": "Mensagem (opcional)",
+      "writeMessage": "Escreva uma mensagem...",
+      "send": "Enviar",
+      "cancel": "Cancelar",
+      "selectPlaceholder": "Escolha um colega",
+      "successTitle": "Sucesso!",
+      "successMessage": "Reconhecimento enviado com sucesso!",
+      "errorTitle": "Erro",
+      "errorMessage": "Erro ao enviar reconhecimento",
+      "errorSelectColleague": "Selecione um colega"
+    },
+    "sentiments": {
+      "veryHappy": "Muito Feliz",
+      "happy": "Feliz",
+      "neutral": "Neutro",
+      "sad": "Triste",
+      "verySad": "Muito Triste"
+    }
+  },
+  "navigation": {
+    "home": "Home",
+    "team": "Equipe",
+    "reports": "Relatórios",
+    "account": "Conta",
+    "logout": "Sair",
+    "developers": "Desenvolvedores",
+    "about": "Sobre"
+  },
+  "language": {
+    "title": "Selecionar Idioma"
+  }
+}

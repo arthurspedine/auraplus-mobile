@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { ActivityIndicator, useColorScheme, View } from "react-native";
 import "@/global.css";
 import { AuthProvider, useAuth } from "@/context/auth-context";
+import "@/i18n";
 
 function InitialLayout() {
   const { isLoading } = useAuth();
