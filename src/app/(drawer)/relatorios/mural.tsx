@@ -127,11 +127,11 @@ export default function MuralScreen() {
                         <Text className="font-semibold text-sm text-primary">
                           Mensagem de Reconhecimento
                         </Text>
-                        <Text className="text-muted text-xs">✨ Gerado por IA</Text>
                       </View>
                       <Text className="leading-5 text-sm text-text">
                         "{funcionario.mensagemReconhecimento}"
                       </Text>
+                      <Text className="mt-2 text-right text-muted text-xs">✨ Gerado por IA</Text>
                     </View>
                   )}
                 </View>
