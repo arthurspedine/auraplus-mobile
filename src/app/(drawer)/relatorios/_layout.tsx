@@ -74,6 +74,15 @@ export default function RelatoriosTabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="mural"
+        options={{
+          title: "Mural",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? "trophy" : "trophy-outline"} color={color} size={size} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
