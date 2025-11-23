@@ -65,6 +65,17 @@
     "noTeamTitle": "You are not part of a team",
     "noTeamMessage": "To view reports, you need to be part of a team. Contact your manager."
   },
+  "developers": {
+    "title": "Developers",
+    "subtitle": "Meet the team behind the project",
+    "ourStory": "Our Story",
+    "howItStarted": "How it started",
+    "howItStartedText": "Aura+ was born from observing a real problem in companies: the difficulty in keeping employees engaged and connected with organizational culture. We noticed that managers often lack visibility into their teams' emotional climate, and employees don't have a simple channel to express how they're feeling.",
+    "ourMission": "Our mission",
+    "ourMissionText": "We want to create an environment where every employee feels valued and heard. We believe that peer recognition and emotional transparency are fundamental to building more united and productive teams. Aura+ is our contribution to making the workplace more human and welcoming.",
+    "techInnovation": "Technology and innovation",
+    "techInnovationText": "We developed this project as part of FIAP's Global Solution 2025-2, applying best practices in mobile development with React Native and Expo. Our architecture was designed to be scalable, modern, and provide the best possible experience to users."
+  },
   "language": {
     "title": "Select Language"
   }
