@@ -313,8 +313,5 @@
       "errorTitle": "Error",
       "errorMessage": "Could not remove the member. Please try again."
     }
-  },
-  "language": {
-    "selector": "Language"
   }
 }
