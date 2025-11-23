@@ -1,6 +1,6 @@
 import axios, { type AxiosRequestConfig, type Method, type AxiosError } from "axios";
 
-const API_URL = "http://192.168.0.69:8080";
+const API_URL = "https://auraplus-webapp.azurewebsites.net/";
 
 export interface RequestOptions extends AxiosRequestConfig {
   authToken?: string;
